@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,6 +24,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -42,22 +45,23 @@ public class DrawPictureFrame extends JFrame {
 	int x = -1;
 	int y = -1;
 	boolean rubber = false;
-	int er_v = 0;
+	int eraser_valjue = 0;
+	int shape =0;
+	int x1,y1,x2,y2;
 	/*
 	 * 创建按钮，菜单组件
 	 */
 	private JToolBar toolBar;
-	private JButton eraserButton;
-	private JButton eraserButton1;
-	private JButton eraserButton2;
+	private JButton straightButton;
+	private JButton RectangleButton;
+	private JButton OvalButton;
+	private JButton CircleButton;
 	private JToggleButton strokeButton1;
 	private JToggleButton strokeButton2;
 	private JToggleButton strokeButton3;
 	private JButton backgroundButton;
 	private JButton foreroundButton;
-	private JButton clearButton;
 	private JButton savebButton;
-	private JButton shapeButton;
 
 	private JMenuItem strokeMenuItem1;
 	private JMenuItem strokeMenuItem2;
@@ -66,15 +70,15 @@ public class DrawPictureFrame extends JFrame {
 	private JMenuItem foregroundMenuItem;
 	private JMenuItem backgroundItem;
 	private JMenuItem eraserMenuItem;
+	private JMenuItem eraserMenuItem1;
+	private JMenuItem eraserMenuItem2;
 	private JMenuItem exitMenuItem;
 	private JMenuItem saveMenuItem;
 
-	private String shuiyin = "";
-	private JMenuItem shuiyinMenuItem;
 
 	public DrawPictureFrame() {
 		setResizable(false);//设为不可更改大小
-		setTitle("画图程序(水印内容：[" + shuiyin + "])");
+		setTitle("CANVAS");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setBounds(500, 100, 1160, 920);
 		init();
@@ -95,19 +99,19 @@ public class DrawPictureFrame extends JFrame {
 		/*
 		 * 设置各组件位置
 		 */
-		savebButton = new JButton("保存");
-		savebButton.setToolTipText("保存");
+		savebButton = new JButton("Save");
+		savebButton.setToolTipText("Save");
 		toolBar.add(savebButton);
 		toolBar.addSeparator();
 
-		strokeButton1 = new JToggleButton("细线");
+		strokeButton1 = new JToggleButton("Thin");
 		strokeButton1.setSelected(true);
 		toolBar.add(strokeButton1);
 
-		strokeButton2 = new JToggleButton("较粗线");
+		strokeButton2 = new JToggleButton("Medium");
 		toolBar.add(strokeButton2);
 
-		strokeButton3 = new JToggleButton("粗线");
+		strokeButton3 = new JToggleButton("Thick");
 
 		ButtonGroup strokeGroup = new ButtonGroup();
 		strokeGroup.add(strokeButton1);
@@ -115,103 +119,159 @@ public class DrawPictureFrame extends JFrame {
 		strokeGroup.add(strokeButton3);
 		toolBar.add(strokeButton3);
 		toolBar.addSeparator();
-		backgroundButton = new JButton("背景颜色");
+		backgroundButton = new JButton("Background Color");
 		toolBar.add(backgroundButton);
-		foreroundButton = new JButton("画笔颜色");
+		foreroundButton = new JButton("Pencil Color");
 		toolBar.add(foreroundButton);
 		toolBar.addSeparator();
 
-		clearButton = new JButton("清除");
-		toolBar.add(clearButton);
-		eraserButton = new JButton("橡皮");
-		toolBar.add(eraserButton);
-		eraserButton1 = new JButton("橡皮1");
-		toolBar.add(eraserButton1);
-		eraserButton2 = new JButton("橡皮2");
-		toolBar.add(eraserButton2);
+		straightButton = new JButton("Straight");
+		toolBar.add(straightButton);
+		RectangleButton = new JButton("Rectangle");
+		toolBar.add(RectangleButton);
+		OvalButton = new JButton("Oval");
+		toolBar.add(OvalButton);
+		CircleButton = new JButton("Circle");
+		toolBar.add(CircleButton);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu systemMenu = new JMenu("系统");
+		JMenu systemMenu = new JMenu("System");
 		menuBar.add(systemMenu);
-		shuiyinMenuItem = new JMenuItem("水印");
-		systemMenu.add(shuiyinMenuItem);
-		saveMenuItem = new JMenuItem("保存");
+		saveMenuItem = new JMenuItem("Save");
 		systemMenu.add(saveMenuItem);
 		systemMenu.addSeparator();
-		exitMenuItem = new JMenuItem("退出");
+		exitMenuItem = new JMenuItem("Close");
 		systemMenu.add(exitMenuItem);
 
-		JMenu strokeMenu = new JMenu("线型");
+		JMenu strokeMenu = new JMenu("Lines");
 		menuBar.add(strokeMenu);
-		strokeMenuItem1 = new JMenuItem("细线");
+		strokeMenuItem1 = new JMenuItem("Thin");
 		strokeMenu.add(strokeMenuItem1);
-		strokeMenuItem2 = new JMenuItem("较粗线");
+		strokeMenuItem2 = new JMenuItem("Medium");
 		strokeMenu.add(strokeMenuItem2);
-		strokeMenuItem3 = new JMenuItem("粗线");
+		strokeMenuItem3 = new JMenuItem("Thick");
 		strokeMenu.add(strokeMenuItem3);
 
-		JMenu colorMenu = new JMenu("颜色");
+		JMenu colorMenu = new JMenu("Color");
 		menuBar.add(colorMenu);
-		foregroundMenuItem = new JMenuItem("前景颜色");
+		foregroundMenuItem = new JMenuItem("Pencil Color");
 		colorMenu.add(foregroundMenuItem);
-		backgroundItem = new JMenuItem("背景颜色");
+		backgroundItem = new JMenuItem("Background Color");
 		colorMenu.add(backgroundItem);
 
-		JMenu editMenu = new JMenu("编辑");
+		JMenu editMenu = new JMenu("Edit");
 		menuBar.add(editMenu);
-		clearMenuItem = new JMenuItem("清除");
+		JMenu erasers = new JMenu("Erasers");
+		editMenu.add(erasers);
+		clearMenuItem = new JMenuItem("Clear");
 		editMenu.add(clearMenuItem);
-		eraserMenuItem = new JMenuItem("橡皮");
-		editMenu.add(eraserMenuItem);
+		eraserMenuItem = new JMenuItem("Small Eraser");
+		erasers.add(eraserMenuItem);
+		eraserMenuItem1 = new JMenuItem("Medium Eraser");
+		erasers.add(eraserMenuItem1);
+		eraserMenuItem2 = new JMenuItem("Large Eraser");
+		erasers.add(eraserMenuItem2);
 
 
 	}
 
 	private void addListener() {
+		
 		canvas.addMouseMotionListener(new MouseMotionAdapter() {
-			public void mouseDragged(final MouseEvent e) {
-				if (x > 0 && y > 0) {
-					if (rubber) {
-						if(er_v == 1) {
-							g.setColor(backgroundColor);
-							g.fillRect(x, y, 30, 30);
+			
+			public void mouseDragged(MouseEvent e) {
+				if (shape == 0) {
+					if (x > 0 && y > 0) {
+						if (rubber) {
+							if(eraser_valjue == 1) {
+								g.setColor(backgroundColor);
+								g.fillRect(x, y, 30, 30);
+							}
+							else if (eraser_valjue == 2){
+								g.setColor(backgroundColor);
+								g.fillRect(x, y, 50, 50);
+							}
+							else {
+								g.setColor(backgroundColor);
+								g.fillRect(x, y, 10, 10);
+							}
+						} else {
+							g.drawLine(x, y, e.getX(), e.getY());
 						}
-						else if (er_v == 2){
-							g.setColor(backgroundColor);
-							g.fillRect(x, y, 50, 50);
-						}
-						else {
-							g.setColor(backgroundColor);
-							g.fillRect(x, y, 10, 10);
-						}
-					} else {
-						g.drawLine(x, y, e.getX(), e.getY());
 					}
-				}
-				x = e.getX();
-				y = e.getY();
-				canvas.repaint();
-			}
+					x = e.getX();
+					y = e.getY();
+					
+					canvas.repaint();
 
+				}
+			
+			}
+			
+			
+			
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				if (rubber) {
 					Toolkit kit = Toolkit.getDefaultToolkit();
-					setCursor(DEFAULT_CURSOR);//设置鼠标显示样式
 				} else {
 					setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 				}
 			}
 		});
+		
 		canvas.addMouseListener(new MouseAdapter() {
-			public void mouseReleased(final MouseEvent arg0) {
-				x = -1;
-				y = -1;
+			public void mousePressed(MouseEvent e){
+				 //获取按下信息
+
+				 x1=e.getX();
+				 y1=e.getY();
+
+			}
+					
+			public void mouseReleased(MouseEvent e){
+				  //获取松开信息
+				if (shape == 1) {
+					  x = -1;
+					  y = -1;
+					  x2=e.getX();
+					  y2=e.getY();
+					  //画线
+					  g.drawLine(x1,y1,x2,y2);
+					  canvas.repaint();
+					
+				}
+				else if (shape == 2) {
+					x2=e.getX();
+					y2=e.getY();
+					g.drawRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+					canvas.repaint();
+				}
+				else if (shape == 3) {
+					x2=e.getX();
+					y2=e.getY();
+					g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+					canvas.repaint();
+				}
+				else if (shape == 4) {
+					x2=e.getX();
+					y2=e.getY();
+					g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)),
+							Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)));
+					canvas.repaint();
+				}
+				else {
+					x=-1;
+					y=-1;
+				}
+				  
 			}
 		});
 
+		
+		
 		strokeButton1.addActionListener(new ActionListener() {
 
 			@Override
@@ -243,7 +303,7 @@ public class DrawPictureFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Color bgColor = JColorChooser.showDialog(DrawPictureFrame.this, "选择颜色对话框", Color.CYAN);
+				Color bgColor = JColorChooser.showDialog(DrawPictureFrame.this, "Choose Color", Color.CYAN);
 				if (bgColor != null) {
 					backgroundColor = bgColor;
 				}
@@ -261,7 +321,7 @@ public class DrawPictureFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Color fColor = JColorChooser.showDialog(DrawPictureFrame.this, "选择颜色对话框", Color.CYAN);
+				Color fColor = JColorChooser.showDialog(DrawPictureFrame.this, "Choose Color", Color.CYAN);
 				if (fColor != null) {
 					forecColor = fColor;
 				}
@@ -272,100 +332,121 @@ public class DrawPictureFrame extends JFrame {
 			}
 		});
 
-		clearButton.addActionListener(new ActionListener() {
+
+		
+		straightButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				g.setColor(backgroundColor);
-				g.fillRect(0, 0, 1160, 830);
-				g.setColor(forecColor);
-				canvas.repaint();
-
-			}
-		});
-
-		eraserButton1.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (eraserButton1.getText().equals("橡皮1")) {
-					rubber = true;
-					er_v = 1;
-					eraserMenuItem.setText("画图");
-					eraserButton1.setText("画图");
-					eraserButton.setText("橡皮");
-					eraserButton2.setText("橡皮2");
+				if (straightButton.getText().equals("Straight")) {
+					rubber = false;
+					shape = 1;
+					straightButton.setText("Free");
+					RectangleButton.setText("Rectangle");
+					OvalButton.setText("Oval");
+					CircleButton.setText("Circle");
 				} else {
 					rubber = false;
-					eraserMenuItem.setText("橡皮");
-					eraserButton.setText("橡皮");
-					eraserButton1.setText("橡皮1");
-					eraserButton2.setText("橡皮2");
+					shape = 0;
+					RectangleButton.setText("Rectangle");
+					OvalButton.setText("Oval");
+					CircleButton.setText("Circle");
+					straightButton.setText("Straight");
 					g.setColor(forecColor);
 				}
 
 			}
 		});
 		
-		eraserButton2.addActionListener(new ActionListener() {
+		RectangleButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (eraserButton2.getText().equals("橡皮2")) {
-					rubber = true;
-					er_v = 2;
-					eraserMenuItem.setText("画图");
-					eraserButton2.setText("画图");
-					eraserButton.setText("橡皮");
-					eraserButton1.setText("橡皮1");
+				if (RectangleButton.getText().equals("Rectangle")) {
+					rubber = false;
+					shape = 2;
+					RectangleButton.setText("Free");
+					CircleButton.setText("Circle");
+					OvalButton.setText("Oval");
+					straightButton.setText("Straight");
 				} else {
 					rubber = false;
-					eraserMenuItem.setText("橡皮");
-					eraserButton.setText("橡皮");
-					eraserButton1.setText("橡皮1");
-					eraserButton2.setText("橡皮2");
+					shape = 0;
+					RectangleButton.setText("Rectangle");
+					OvalButton.setText("Oval");
+					CircleButton.setText("Circle");
+					straightButton.setText("Straight");
 					g.setColor(forecColor);
 				}
 
 			}
 		});
 		
-		eraserButton.addActionListener(new ActionListener() {
+		OvalButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (eraserButton.getText().equals("橡皮")) {
-					rubber = true;
-					er_v = 0;
-					eraserMenuItem.setText("画图");
-					eraserButton.setText("画图");
-					eraserButton1.setText("橡皮1");
-					eraserButton2.setText("橡皮2");
+				if (OvalButton.getText().equals("Oval")) {
+					rubber = false;
+					shape = 3;
+					OvalButton.setText("Free");
+					CircleButton.setText("Circle");
+					RectangleButton.setText("Rectangle");
+					straightButton.setText("Straight");
 				} else {
 					rubber = false;
-					eraserMenuItem.setText("橡皮");
-					eraserButton.setText("橡皮");
-					eraserButton1.setText("橡皮1");
-					eraserButton2.setText("橡皮2");
+					shape = 0;
+					OvalButton.setText("Oval");
+					CircleButton.setText("Circle");
+					RectangleButton.setText("Rectangle");
+					straightButton.setText("Straight");
 					g.setColor(forecColor);
 				}
 
 			}
 		});
 
+		CircleButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (CircleButton.getText().equals("Circle")) {
+					rubber = false;
+					shape = 4;
+					CircleButton.setText("Free");
+					OvalButton.setText("Oval");
+					RectangleButton.setText("Rectangle");
+					straightButton.setText("Straight");
+				} else {
+					rubber = false;
+					shape = 0;
+					OvalButton.setText("Oval");
+					CircleButton.setText("Circle");
+					RectangleButton.setText("Rectangle");
+					straightButton.setText("Straight");
+					g.setColor(forecColor);
+				}
+
+			}
+		});
 		savebButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
-				
-				
+				try {
+					ImageIO.write(image, "jpeg", new File("1.jpeg"));
+					System.out.println("Saved!");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 				
 			}
 		});
 
-		// 细线菜单项
+		// Thin菜单项
 		strokeMenuItem1.addActionListener(new ActionListener() {
 
 			@Override
@@ -375,7 +456,7 @@ public class DrawPictureFrame extends JFrame {
 			}
 		});
 
-		// 较粗线菜单项
+		// Medium菜单项
 		strokeMenuItem2.addActionListener(new ActionListener() {
 
 			@Override
@@ -385,7 +466,7 @@ public class DrawPictureFrame extends JFrame {
 			}
 		});
 
-		// 粗线菜单项
+		// Thick菜单项
 		strokeMenuItem3.addActionListener(new ActionListener() {
 
 			@Override
@@ -399,7 +480,7 @@ public class DrawPictureFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Color fColor = JColorChooser.showDialog(DrawPictureFrame.this, "选择颜色对话框", Color.CYAN);
+				Color fColor = JColorChooser.showDialog(DrawPictureFrame.this, "Choose Color", Color.CYAN);
 				if (fColor != null) {
 					forecColor = fColor;
 				}
@@ -414,7 +495,7 @@ public class DrawPictureFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Color bgColor = JColorChooser.showDialog(DrawPictureFrame.this, "选择颜色对话框", Color.CYAN);
+				Color bgColor = JColorChooser.showDialog(DrawPictureFrame.this, "Choose Color", Color.CYAN);
 				if (bgColor != null) {
 					backgroundColor = bgColor;
 				}
@@ -444,19 +525,65 @@ public class DrawPictureFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (eraserButton.getText().equals("橡皮")) {
+				if (eraserMenuItem.getText().equals("Small Eraser")) {
 					rubber = true;
-					eraserButton.setText("画图");
-					eraserMenuItem.setText("画图");
+					eraser_valjue = 0;
+					eraserMenuItem.setText("Draw");
+					eraserMenuItem1.setText("Medium Eraser");
+					eraserMenuItem2.setText("Large Eraser");
 				} else {
 					rubber = false;
-					eraserButton.setText("橡皮");
-					eraserMenuItem.setText("橡皮");
+					eraserMenuItem.setText("Small Eraser");
+					eraserMenuItem1.setText("Medium Eraser");
+					eraserMenuItem2.setText("Large Eraser");
 					g.setColor(forecColor);
 				}
 
 			}
 		});
+		
+		eraserMenuItem1.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (eraserMenuItem1.getText().equals("Medium Eraser")) {
+					rubber = true;
+					eraser_valjue = 1;
+					eraserMenuItem.setText("Small Eraser");
+					eraserMenuItem1.setText("Draw");
+					eraserMenuItem2.setText("Large Eraser");
+				} else {
+					rubber = false;
+					eraserMenuItem.setText("Small Eraser");
+					eraserMenuItem1.setText("Medium Eraser");
+					eraserMenuItem2.setText("Large Eraser");
+					g.setColor(forecColor);
+				}
+
+			}
+		});
+		
+		eraserMenuItem2.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (eraserMenuItem2.getText().equals("Large Eraser")) {
+					rubber = true;
+					eraser_valjue = 2;
+					eraserMenuItem.setText("Small Eraser");
+					eraserMenuItem1.setText("Medium Eraser");
+					eraserMenuItem2.setText("Draw");
+				} else {
+					rubber = false;
+					eraserMenuItem.setText("Small Eraser");
+					eraserMenuItem1.setText("Medium Eraser");
+					eraserMenuItem2.setText("Large Eraser");
+					g.setColor(forecColor);
+				}
+
+			}
+		});
+		
 
 		exitMenuItem.addActionListener(new ActionListener() {
 
@@ -467,19 +594,6 @@ public class DrawPictureFrame extends JFrame {
 			}
 		});
 
-		shuiyinMenuItem.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				shuiyin = JOptionPane.showInputDialog(DrawPictureFrame.this, "你想添加什么水印？");
-				if (null == shuiyin) {
-					shuiyin = "";
-				} else {
-					setTitle("画图程序(水印内容：[" + shuiyin + "])");
-				}
-
-			}
-		});
 
 		toolBar.addMouseMotionListener(new MouseMotionAdapter() {//工具栏添加鼠标事件监听
 			@Override
@@ -491,23 +605,6 @@ public class DrawPictureFrame extends JFrame {
 		});
 	}
 
-	private void addWatermark() {
-		if (!"".equals(shuiyin.trim())) {// 如果水印字段不是空字符串
-			g.rotate(Math.toRadians(-30));
-			Font font = new Font("楷体", Font.BOLD, 72);
-			g.setFont(font);
-			g.setColor(Color.GRAY);
-			AlphaComposite alpha = AlphaComposite.SrcOver.derive(0.4f);// 设置透明效果
-			g.setComposite(alpha);
-			g.drawString(shuiyin, 350, 900);
-			canvas.repaint();
-
-			g.rotate(Math.toRadians(30));// 将旋转的图片再转回来
-			alpha = AlphaComposite.SrcOver.derive(1f);// 不透明效果
-			g.setComposite(alpha);// 使用不透明效果
-			g.setColor(forecColor);// 画笔恢复之前的颜色
-		}
-	}
 
 	public static void main(String[] args) {
 		DrawPictureFrame frame = new DrawPictureFrame();
