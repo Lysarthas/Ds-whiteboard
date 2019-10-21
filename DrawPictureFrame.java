@@ -755,6 +755,8 @@ public class DrawPictureFrame extends JFrame {
 		Locale.setDefault(Locale.ENGLISH);
 		DrawPictureFrame frame = new DrawPictureFrame();
 		frame.setVisible(true);
+		
+		
 
 	}
 
