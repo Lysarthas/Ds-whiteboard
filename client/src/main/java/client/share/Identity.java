@@ -3,12 +3,7 @@ package client.share;
 import java.io.Serializable;
 
 public class Identity implements Serializable{
-	
-	/**
-     *
-     */
-    private static final long serialVersionUID = -5278576148196578914L;
-
+    private static final long serialVersionUID = 1L;
     String myname;
 	int myIP;
 	
