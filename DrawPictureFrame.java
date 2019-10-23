@@ -1,13 +1,19 @@
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
@@ -36,9 +42,10 @@ import java.awt.event.MouseMotionListener;
 
 public class DrawPictureFrame extends JFrame {
 	BufferedImage img = null;
-	BufferedImage image = new BufferedImage(1160, 830, BufferedImage.TYPE_INT_BGR);
+	BufferedImage image = new BufferedImage(900, 830, BufferedImage.TYPE_INT_BGR);
 	Graphics gs = image.getGraphics();
 	Graphics2D g = (Graphics2D) gs;
+	
 	DrawPictureCanvas canvas = new DrawPictureCanvas();
 	Color forecColor = Color.black;
 	Color backgroundColor = Color.white;
@@ -53,6 +60,13 @@ public class DrawPictureFrame extends JFrame {
 	/*
 	 * 创建按钮，菜单组件
 	 */
+	private JLabel lb;
+	private JPanel jp;
+	private JPanel jp1;
+	private JPanel jp2;
+	private JPanel jp3;
+	private JButton sendBt;
+	private JTextField inputField;
 	private JToolBar toolBar;
 	private JButton straightButton;
 	private JButton RectangleButton;
@@ -65,6 +79,8 @@ public class DrawPictureFrame extends JFrame {
 	private JButton backgroundButton;
 	private JButton foreroundButton;
 	private JButton savebButton;
+	private JTextArea chatContent;
+	private JTextArea editinglist;
 
 //	private JMenuItem strokeMenuItem1;
 //	private JMenuItem strokeMenuItem2;
@@ -91,6 +107,7 @@ public class DrawPictureFrame extends JFrame {
 		addListener();
 
 	}
+	
 	
 	public void getback() {
 		eraserMenuItem.setText("Small Eraser");
@@ -128,7 +145,42 @@ public class DrawPictureFrame extends JFrame {
 		getContentPane().add(canvas);
 
 		toolBar = new JToolBar();
+		
+		jp = new JPanel();
+		//jp.setSize(50, 10);
+		jp1 = new JPanel();
+		jp2 = new JPanel();
+		jp3 = new JPanel();
+		//jp2.setSize(20,10);
+		
+		lb = new JLabel("           Chat Room");
+		getContentPane().add(jp, BorderLayout.EAST);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
+		jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+		
+		
+		editinglist = new JTextArea(20,20);
+		chatContent = new JTextArea(70,20);
+		JScrollPane showPanel = new JScrollPane(chatContent);
+		chatContent.setEditable(false);
+		jp.setBackground(Color.GREEN);
+		inputField = new JTextField(20);	
+		sendBt = new JButton("Send");
+		jp.add(lb);
+		jp.add(jp1);
+		jp.add(jp2);
+		jp1.setLayout(new BorderLayout());
+		jp1.add(showPanel);
+		jp1.setSize(80,80);
+		jp.add(jp3);
+		jp1.add(chatContent);
+		
+		
+		jp.add(editinglist);
+		
+		jp2.add(inputField);
+		jp2.add(sendBt);
+		jp.add(jp3);
 		
 
 		savebButton = new JButton("Save");
@@ -224,18 +276,7 @@ public class DrawPictureFrame extends JFrame {
 		
 		canvas.addMouseMotionListener(new MouseMotionAdapter() {
 			
-			public void mouseDragged(MouseEvent e) {
-				//这里是拖动直线得function，如果不需要就把 shape == 1这个condition删掉就好
-//				if (shape == 1){
-//					   g.setColor(backgroundColor);
-//					   g.drawLine(x1, y1, x2, y2);
-//					   x2 = e.getX();
-//					   y2 = e.getY();
-//					   g.setColor(forecColor);
-//					   g.drawLine(x1, y1, x2, y2);
-//					   canvas.repaint();
-//				}
-//				else 
+			public void mouseDragged(MouseEvent e) { 
 				if (shape == 0) {
 					if (x > 0 && y > 0) {
 						if (rubber) {
@@ -273,7 +314,6 @@ public class DrawPictureFrame extends JFrame {
 		});
 		
 		canvas.addMouseListener(new MouseAdapter() {
-			
 			//mouse pressed
 			public void mousePressed(MouseEvent e){
 				if (rubber == false) {
@@ -408,6 +448,31 @@ public class DrawPictureFrame extends JFrame {
 
 				
 
+			}
+		});
+		
+		sendBt.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String content = inputField.getText();
+				if(content != null && !content.trim().equals("")){
+					if (content.length() > 60) {
+						chatContent.append("Usre 1:"+content.substring(0,29 )+"\n" + content.substring(30,59)+"\n" + 
+									content.substring(60,content.length() -1) + "\n");
+					}
+					else if (content.length() > 30) {
+						chatContent.append("Usre 1:"+content.substring(0,29 )+"\n" + 
+									content.substring(30,content.length() -1) + "\n");
+					}
+					else {
+						chatContent.append("Usre 1:"+content+"\n");
+					}
+					editinglist.append("User1 editing\n");
+					
+					
+				}else{
+					JOptionPane.showMessageDialog(null, "Input can't be empty", "Warning", JOptionPane.INFORMATION_MESSAGE);
+				}
+				inputField.setText("");
 			}
 		});
 
@@ -740,14 +805,14 @@ public class DrawPictureFrame extends JFrame {
 		});
 
 
-		toolBar.addMouseMotionListener(new MouseMotionAdapter() {//工具栏添加鼠标事件监听
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));//设置鼠标的形状为默认光标
-
-			}
-
-		});
+//		toolBar.addMouseMotionListener(new MouseMotionAdapter() {//工具栏添加鼠标事件监听
+//			@Override
+//			public void mouseMoved(MouseEvent e) {
+//				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));//设置鼠标的形状为默认光标
+//
+//			}
+//
+//		});
 	}
 
 
@@ -755,8 +820,6 @@ public class DrawPictureFrame extends JFrame {
 		Locale.setDefault(Locale.ENGLISH);
 		DrawPictureFrame frame = new DrawPictureFrame();
 		frame.setVisible(true);
-		
-		
 
 	}
 
