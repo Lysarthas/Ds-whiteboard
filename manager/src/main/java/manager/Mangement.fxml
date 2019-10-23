@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * @Author: Junlin Chen (1065399) 
+ * @Date: 2019-09-05 16:15:11 
+ * @Last Modified by:   Junlin Chen (1065399) 
+ * @Last Modified time: 2019-09-05 16:15:11 
+ -->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.collections.*?>
+<?import java.lang.String?>
+
+<GridPane fx:controller="manager.controller.UserManagementController" 
+    xmlns:fx="http://javafx.com/fxml"
+    prefHeight="500" prefWidth="600"
+    hgap="10" vgap="10"
+    >
+
+    <padding>
+        <Insets top="25" right="25" bottom="10" left="25"/>
+    </padding>
+
+    <children>
+        <Separator GridPane.columnIndex="0" 
+            GridPane.rowIndex="1"
+            GridPane.columnSpan="3"/>
+
+        <Button fx:id="startServerButton" 
+            onAction="#startServer" text="Start WhiteBoard" 
+            GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+
+        <Button fx:id="stopServerButton"
+            onAction="#stopServer" text="Stop WhiteBoard" 
+            GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <ListView fx:id="userListView" 
+            GridPane.columnIndex="3" 
+            GridPane.rowIndex="1"
+            GridPane.rowSpan="9"/>
+
+        <TextArea fx:id="serverOutput" text="" wrapText="true" 
+            GridPane.columnIndex="0" GridPane.rowIndex="4"
+            GridPane.columnSpan="2"
+            GridPane.rowSpan="8"/>
+    </children>
+</GridPane>
