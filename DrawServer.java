@@ -1,8 +1,10 @@
 import java.net.MalformedURLException;
 import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.server.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Locale;
+
 
 public class DrawServer extends UnicastRemoteObject implements DrawInterface, Runnable{
 	
@@ -53,8 +55,13 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 		return true;
 	}
 	
-	public ArrayList<DrawInterface> getClientlist() {
-		return this.clients;
+	public ArrayList<String> getClientlist() throws RemoteException {
+		ArrayList<String> clientname = new ArrayList<>();
+		for(int i=0; i< clients.size(); i++) {
+			clientname.add(clients.get(i).user().getName());
+		}
+		
+		return clientname;
 	}
 	
 	public boolean removeClient(Identity id) {
@@ -68,13 +75,15 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 		try {
 			DrawServer server = getInstance();
 			String url = "rmi://"+this.IP+":"+this.Port+"/RMIServer";
+			LocateRegistry.createRegistry(Integer.parseInt(this.Port));
 			Naming.rebind(url, server);
+			Locale.setDefault(Locale.ENGLISH);
+			DrawPictureFrame frame = new DrawPictureFrame();
+			frame.setVisible(true);
 			
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
