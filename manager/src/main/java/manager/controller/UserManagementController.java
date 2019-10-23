@@ -50,12 +50,12 @@ public class UserManagementController implements UncaughtExceptionHandler {
     @FXML 
     protected void startServer(ActionEvent event) throws RemoteException {
         this.logging("Starting the server");
+        this.startServerButton.setDisable(true);
+        this.stopServerButton.setDisable(false);
         this.drawServer = DrawServer.newserver(Integer.toString(this.port));
         this.drawServerThread = new Thread(this.drawServer);
         this.drawServerThread.start();
         this.refreshUserList();
-        this.startServerButton.setDisable(true);
-        this.stopServerButton.setDisable(false);
         this.logging("Server started");
     }
 
