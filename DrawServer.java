@@ -67,6 +67,16 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 	public boolean removeClient(Identity id) {
 		return true;
 	}
+	
+	public void checkstatus() {
+		for(int i = 0; i< clients.size(); i++) {
+			try {
+				String n = clients.get(i).user().getName();
+			}catch(RemoteException e) {
+				clients.remove(i);
+			}
+		}
+	}
 
 
 
