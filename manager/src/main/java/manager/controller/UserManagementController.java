@@ -29,7 +29,7 @@ public class UserManagementController implements UncaughtExceptionHandler {
     private ArrayList<String> userList = new ArrayList<String>();
     private ObservableList<String> observableList = FXCollections.observableArrayList();
 
-    private int port = 8888;
+    private int port;
 
     private DrawServer drawServer;
     private Thread drawServerThread;
@@ -39,8 +39,6 @@ public class UserManagementController implements UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
         serverOutput.appendText("Welcome!!\n");
         userListView.setEditable(false);
-        this.drawServer = DrawServer.newserver(Integer.toString(this.port));
-        this.drawServerThread = new Thread(this.drawServer);
     }
 
     public void setPort(int port) {
@@ -49,13 +47,17 @@ public class UserManagementController implements UncaughtExceptionHandler {
 
     @FXML 
     protected void startServer(ActionEvent event) throws RemoteException {
+        this.logging("Starting the server");
+        this.drawServer = DrawServer.newserver(Integer.toString(this.port));
+        this.drawServerThread = new Thread(this.drawServer);
         this.drawServerThread.start();
         this.refreshUserList();
+        this.logging("Server started");
     }
 
     @FXML
     protected void stopServer(ActionEvent event) {
-
+        this.logging("Stopping the server");
     }
 
     private void refreshUserList() throws RemoteException {
