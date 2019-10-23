@@ -39,6 +39,8 @@ public class UserManagementController implements UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
         serverOutput.appendText("Welcome!!\n");
         userListView.setEditable(false);
+        this.stopServerButton.setDisable(true);
+        this.startServerButton.setDisable(false);
     }
 
     public void setPort(int port) {
@@ -52,11 +54,15 @@ public class UserManagementController implements UncaughtExceptionHandler {
         this.drawServerThread = new Thread(this.drawServer);
         this.drawServerThread.start();
         this.refreshUserList();
+        this.startServerButton.setDisable(true);
+        this.stopServerButton.setDisable(false);
         this.logging("Server started");
     }
 
     @FXML
     protected void stopServer(ActionEvent event) {
+        this.stopServerButton.setDisable(true);
+        this.startServerButton.setDisable(false);
         this.logging("Stopping the server");
     }
 
