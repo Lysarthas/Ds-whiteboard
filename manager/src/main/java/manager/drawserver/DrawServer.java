@@ -45,6 +45,9 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 	
 	public void broadcast(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException{
 		for(int i=0; i < clients.size(); i++) {
+			if(clients.get(i).user().equals(id)) {
+				continue;
+			}
             try {
                 clients.get(i).drawtask(id, shape, timeline, color, o);
             } catch (RemoteException e) {
