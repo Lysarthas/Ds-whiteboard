@@ -15,8 +15,8 @@ public class Identity implements Serializable{
         this.myname = userName;
     }
 	
-	public boolean equals(Object o) {
-        return o != null && o.getClass() == this.getClass() && this.getName() == ((Identity) o).getName();
+    public boolean equals(Object o) {
+        return o != null && o.getClass() == this.getClass() && this.getName().equals(((Identity) o).getName());
 	}
 	
 	public String getName() {

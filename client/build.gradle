@@ -48,7 +48,6 @@ eclipse {
 mainClassName = 'client.App'
 
 apply plugin: 'application'
-applicationDefaultJvmArgs = ["-Djava.security.manager", "-Djava.security.policy=" + file("$projectDir/mysecurity.policy").absolutePath]
 
 task myRun(type: JavaExec) {
   classpath sourceSets.main.runtimeClasspath

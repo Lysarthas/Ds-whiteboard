@@ -73,7 +73,10 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 			connect(serverinterface, this.id);
 			if(connection) {
 				System.out.println("join success");
-			}
+            } else {
+                System.out.println("You cannot join this room maybe caused by duplicate user name. You can try again with different username later");
+                System.exit(1);
+            }
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
