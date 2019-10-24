@@ -378,7 +378,7 @@ public class DrawPictureFrame extends JFrame {
                         canvas.repaint();
                         sync(userId, "Text", "end", forecColor, p, s);
                     }
-
+                    sync(userId, "Free", "start", forecColor, p, "");
                 } else {
                     x = -1;
                     y = -1;
@@ -830,12 +830,17 @@ public class DrawPictureFrame extends JFrame {
     }
 
     public void sync(Identity id, String shape, String timeline, Object color, Object o, String message) {
+        final String myMessage;
+        if (message == null) {
+            myMessage = "";
+        } else {
+            myMessage = message;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // TODO Auto-generated method stub
                 try {
-                    Server.broadcast(id, shape, timeline, color, o, message);
+                    Server.broadcast(id, shape, timeline, color, o, myMessage);
                 } catch (RemoteException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
