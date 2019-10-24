@@ -41,10 +41,10 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 		return id;
 	}
 	
-	public void broadcast(String shape, String timeline, String color, Object o) throws RemoteException{
+	public void broadcast(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException{
 		for(int i=0; i < clients.size(); i++) {
             try {
-                clients.get(i).drawtask(shape, timeline, color, o);
+                clients.get(i).drawtask(id, shape, timeline, color, o);
             } catch (RemoteException e) {
                 clients.remove(i);
                 i--;
@@ -52,7 +52,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 		}
 	}
 	
-	public void drawtask(String shape, String timeline, String color, Object o) throws RemoteException{
+	public void drawtask(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException{
 
     }
 	
@@ -85,16 +85,6 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
             }	
 		}
 		return clientname;
-	}
-	
-	public void checkstatus() {
-		for(int i=0; i< clients.size(); i++) {
-			try {
-				clients.get(i).user().getName();
-			}catch(RemoteException e) {
-				clients.remove(i);
-			}
-		}
 	}
 	
 	public boolean removeClient(Identity id) throws RemoteException {
