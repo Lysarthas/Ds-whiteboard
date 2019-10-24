@@ -71,7 +71,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
     public void drawtask(Identity id, String shape, String status, Object color, Object o) throws RemoteException {
         if (status.equals("start")) {
             lpts.put(id.getName(), o);
-        } else if (status.equals("drag")) {
+        } else if (status.equals("drag") && DrawPictureFrame.isDrag(shape)) {
             Point last = (Point) lpts.get(id.getName());
             Point current = (Point) o;
             DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
@@ -136,7 +136,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
             this.login(this, this.id);
 
             Locale.setDefault(Locale.ENGLISH);
-            pFrame = DrawPictureFrame.drawfram(server);
+            pFrame = DrawPictureFrame.drawfram(server, server);
             pFrame.setVisible(true);
         } catch (RemoteException e) {
             // TODO Auto-generated catch block

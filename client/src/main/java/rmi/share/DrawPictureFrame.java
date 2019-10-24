@@ -20,7 +20,6 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
-import client.drawclient.DrawClient;
 import lombok.Getter;
 import lombok.Setter;
 import rmi.share.DrawInterface;
@@ -42,6 +41,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
@@ -54,7 +54,12 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 
 public class DrawPictureFrame extends JFrame {
+    public static String[] SHAPE_MAP = new String[]{"Free", "Straight", "Rectangle", "Oval", "Circle", "Text", "Rubber1", "Rubber2", "Rubber3"};
+
     BufferedImage img = null;
+
+    @Getter
+    @Setter
     BufferedImage image = new BufferedImage(900, 830, BufferedImage.TYPE_INT_BGR);
     Graphics gs = image.getGraphics();
 
@@ -68,7 +73,6 @@ public class DrawPictureFrame extends JFrame {
     Color forecColor = Color.black;
     Color backgroundColor = Color.white;
     DrawInterface Server;
-    DrawClient Client;
 
     static Map<String, String> list = new Hashtable<String, String>();
 
@@ -119,9 +123,11 @@ public class DrawPictureFrame extends JFrame {
     private JMenuItem uploadMenuItem;
     private JMenuItem saveMenuItem;
 
-    public static DrawPictureFrame drawfram(DrawInterface server) {
+    private Identity userId;
+
+    public static DrawPictureFrame drawfram(DrawInterface server, DrawInterface user) throws RemoteException {
         if (dpf_ins == null) {
-            dpf_ins = new DrawPictureFrame(server);
+            dpf_ins = new DrawPictureFrame(server, user);
         }
 
         return dpf_ins;
@@ -131,16 +137,15 @@ public class DrawPictureFrame extends JFrame {
         return dpf_ins;
     }
 
-    public DrawPictureFrame(DrawInterface server) {
+    public DrawPictureFrame(DrawInterface server, DrawInterface user) throws RemoteException {
         this.Server = server;
-        this.Client = DrawClient.getclient();
         setResizable(false);
         setTitle("CANVAS");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBounds(500, 100, 1160, 920);
         init();
         addListener();
-
+        this.userId = user.user();
     }
 
     public void getback() {
@@ -299,24 +304,16 @@ public class DrawPictureFrame extends JFrame {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
 
             public void mouseDragged(MouseEvent e) {
+                Point p = e.getPoint();
                 if (shape == 0) {
                     if (x > 0 && y > 0) {
                         if (rubber) {
-                            if (eraser_valjue == 1) {
-                                g.setColor(backgroundColor);
-                                g.fillRect(x, y, 30, 30);
-                            } else if (eraser_valjue == 2) {
-                                g.setColor(backgroundColor);
-                                g.fillRect(x, y, 50, 50);
-                            } else {
-                                g.setColor(backgroundColor);
-                                g.fillRect(x, y, 10, 10);
-                            }
+                            drawEraser();
+                            sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p);
                         } else {
                             g.setColor(forecColor);
                             g.drawLine(x, y, e.getX(), e.getY());
-                            Point p = e.getPoint();
-                            sync(Client.user(), "free", "drag", forecColor, p);
+                            sync(userId, SHAPE_MAP[shape], "drag", forecColor, p);
                         }
                     }
                     x = e.getX();
@@ -362,7 +359,7 @@ public class DrawPictureFrame extends JFrame {
                 }
 
                 try {
-                    Server.broadcast(Client.user(), "", "start", forecColor, p);
+                    Server.broadcast(userId, "", "start", forecColor, p);
                 } catch (RemoteException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -378,47 +375,10 @@ public class DrawPictureFrame extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 Point p = e.getPoint();
                 if (rubber == false) {
-                    if (shape == 1) {
-                        x = -1;
-                        y = -1;
-                        x2 = e.getX();
-                        y2 = e.getY();
-                        // ����
-                        g.setColor(forecColor);
-                        g.drawLine(x1, y1, x2, y2);
-                        canvas.repaint();
-
-                    } else if (shape == 2) {
-                        x2 = e.getX();
-                        y2 = e.getY();
-                        g.setColor(forecColor);
-                        g.drawRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
-                        canvas.repaint();
-                    } else if (shape == 3) {
-                        x2 = e.getX();
-                        y2 = e.getY();
-                        g.setColor(forecColor);
-                        g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
-                        canvas.repaint();
-                    } else if (shape == 4) {
-                        x2 = e.getX();
-                        y2 = e.getY();
-                        g.setColor(forecColor);
-                        g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)),
-                                Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)));
-                        canvas.repaint();
-                    }
-
-                    else {
-                        x = -1;
-                        y = -1;
-                        try {
-                            Server.broadcast(Client.user(), "free", "end", forecColor, p);
-                        } catch (RemoteException e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-                    }
+                    x2 = e.getX();
+                    y2 = e.getY();
+                    normalDraw(shape, forecColor, x1, y1, x2, y2);
+                    sync(userId, SHAPE_MAP[shape], "end", forecColor, p);
                 } else {
                     x = -1;
                     y = -1;
@@ -848,8 +808,23 @@ public class DrawPictureFrame extends JFrame {
     }
 
     public void drawpic(Object color, Point p1, Point p2, String shape) {
-        g.setColor((Color) color);
-        g.drawLine(p1.x, p1.y, p2.x, p2.y);
+        int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);
+        if (shapeIndex < 0) {
+            System.out.println("Invalid shape");
+            return;
+        }
+        
+        if (shapeIndex > 5) {
+            // rubber
+            this.eraser_valjue = shapeIndex - 6;
+            drawEraser();
+        } else if (shapeIndex == 0) {
+            g.setColor((Color) color);
+            g.drawLine(p1.x, p1.y, p2.x, p2.y);
+        } else {
+            normalDraw(shapeIndex, (Color)color, p1.x, p1.y, p2.x, p2.y);
+        }
+        
         canvas.repaint();
     }
 
@@ -866,5 +841,48 @@ public class DrawPictureFrame extends JFrame {
                 }
             }
         }).start();
+    }
+
+    private void drawEraser() {
+        if (eraser_valjue == 1) {
+            g.setColor(backgroundColor);
+            g.fillRect(x, y, 30, 30);
+        } else if (eraser_valjue == 2) {
+            g.setColor(backgroundColor);
+            g.fillRect(x, y, 50, 50);
+        } else {
+            g.setColor(backgroundColor);
+            g.fillRect(x, y, 10, 10);
+        }
+    }
+
+    private void normalDraw(int shape, Color color, int x1, int y1, int x2, int y2) {
+        g.setColor(color);
+        if (shape == 1) {
+            x = -1;
+            y = -1;
+            g.drawLine(x1, y1, x2, y2);
+            canvas.repaint();
+        } else if (shape == 2) {
+            g.drawRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+            canvas.repaint();
+        } else if (shape == 3) {
+            g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+            canvas.repaint();
+        } else if (shape == 4) {
+            g.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)),
+                    Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2)));
+            canvas.repaint();
+        }
+
+        else {
+            x = -1;
+            y = -1;
+        }
+    }
+
+    public static boolean isDrag(String shape) {
+        int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);
+        return shapeIndex == 0 || shapeIndex > 5;
     }
 }
