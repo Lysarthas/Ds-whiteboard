@@ -4,6 +4,7 @@
 package manager;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 
 import org.apache.commons.cli.CommandLine;
@@ -22,7 +23,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import manager.controller.UserManagementController;
+import manager.drawserver.DrawServer;
 
 public class App extends Application {
     private static int DEFAULT_PORT = 8888;
@@ -59,7 +62,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-		this.primaryStage.setTitle("White board server management");
+        this.primaryStage.setTitle("White board server management");
 		initRootLayout();
     }
 
@@ -75,6 +78,12 @@ public class App extends Application {
         primaryStage.setMinHeight(MIN_HEIGHT);
         primaryStage.setMinWidth(MIN_WIDTH);
         primaryStage.setOnCloseRequest(e->{
+            try {
+                DrawServer.newserver("").closing();
+            } catch (RemoteException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             Platform.exit();
             System.exit(0);
         });

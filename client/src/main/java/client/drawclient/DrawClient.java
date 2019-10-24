@@ -12,8 +12,10 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import rmi.share.*;
 
@@ -29,7 +31,7 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
     String IP, Username;
     int Port;
     Identity id;
-    boolean connection = false;
+    Boolean connection = false;
     Hashtable lpts = new Hashtable();
 
     public static DrawClient clt_ins = null;
@@ -57,10 +59,12 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
         return id;
     }
 
-    public void broadcast(Identity id, String shape, String timeline, Object color, Object o, String message) throws RemoteException {
+    public void broadcast(Identity id, String shape, String timeline, Object color, Object o, String message)
+            throws RemoteException {
     }
 
-    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message) throws RemoteException {
+    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message)
+            throws RemoteException {
         if (shape != null) {
             this.pFrame.showEditing(id);
         }
@@ -90,7 +94,7 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
         pFrame.displayMessage(editor, message);
     }
 
-    public boolean login(DrawInterface client, Identity id) throws RemoteException {
+    public Boolean login(DrawInterface client, Identity id) throws RemoteException {
         return true;
     }
 
@@ -107,11 +111,15 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
             String url = "rmi://" + this.IP + ":" + p.toString() + "/RMIServer";
             DrawInterface serverinterface = (DrawInterface) Naming.lookup(url);
             connect(serverinterface, this.id);
-            if (connection) {
+            if (connection == null) {
+                System.out.println("Administrator rejected your request. See u later");
+                System.exit(0);
+            } else if (connection) {
                 System.out.println("join success");
                 Locale.setDefault(Locale.ENGLISH);
                 pFrame = DrawPictureFrame.drawfram(serverinterface, this);
                 syncCurrentImage(serverinterface);
+                pFrame.setTitle(id.getName());
                 pFrame.setVisible(true);
             } else {
                 System.out.println(
@@ -122,7 +130,6 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
             // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (RemoteException e) {
-            e.printStackTrace();
             this.uncaughtException(Thread.currentThread(), e);
         } catch (NotBoundException e) {
             // TODO Auto-generated catch block
@@ -131,9 +138,9 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-		
+
     }
-    
+
     private void syncCurrentImage(DrawInterface serverinterface) throws IOException {
         byte[] imageBytesArray = serverinterface.getCurrentGraph();
         BufferedImage bImage2 = ImageIO.read(new ByteArrayInputStream(imageBytesArray));
@@ -143,7 +150,7 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         if (e instanceof RemoteException) {
-            System.out.println("failed to connect to server");
+            System.out.println("failed to connect to server. Please check your configuration and try later");
         }
         System.exit(1);
     }
@@ -153,4 +160,22 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public void notify(String message, boolean isClosed) throws RemoteException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(pFrame, message);
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                System.exit(0);
+            }
+        }).start();
+    }
+
 }

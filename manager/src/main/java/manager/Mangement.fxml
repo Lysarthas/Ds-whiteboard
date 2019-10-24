@@ -38,7 +38,8 @@
             onAction="#stopServer" text="Stop WhiteBoard" 
             GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-        <ListView fx:id="userListView" 
+        <ListView fx:id="userListView"
+            onMouseClicked="#deleteUser"
             GridPane.columnIndex="3" 
             GridPane.rowIndex="1"
             GridPane.rowSpan="9"/>

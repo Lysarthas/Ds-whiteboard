@@ -31,6 +31,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -55,7 +56,7 @@ import java.awt.event.MouseMotionListener;
 
 public class DrawPictureFrame extends JFrame {
     public static String[] SHAPE_MAP = new String[] { "Free", "Straight", "Rectangle", "Oval", "Circle", "Text",
-            "Rubber1", "Rubber2", "Rubber3" };
+            "Rubber1", "Rubber2", "Rubber3", "Clear" };
 
     BufferedImage img = null;
 
@@ -74,6 +75,8 @@ public class DrawPictureFrame extends JFrame {
     Color forecColor = Color.black;
     Color backgroundColor = Color.white;
     DrawInterface Server;
+
+    private JTextArea room;
 
     static Map<String, String> list = new Hashtable<String, String>();
 
@@ -189,38 +192,38 @@ public class DrawPictureFrame extends JFrame {
         useless = new JPanel();
 
         jp = new JPanel();
-        jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 1));
-        // jp.setSize(50, 10);
+        jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+        //jp.setSize(50, 10);
         jp1 = new JPanel();
         jp2 = new JPanel();
-        jp3 = new JPanel();
-        // jp2.setSize(20,10);
-
-        lb = new JLabel("Chat Room");
-        lb.setSize(20, 10);
-
         getContentPane().add(jp, BorderLayout.EAST);
         getContentPane().add(toolBar, BorderLayout.NORTH);
-        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-
-        editinglist = new JTextArea(20, 10);
-        chatContent = new JTextArea(70, 10);
-        JScrollPane showPanel = new JScrollPane(chatContent);
+        jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
+        editinglist = new JTextArea(10,10);
+        chatContent = new JTextArea(200,10);
+        room = new JTextArea(1,1);
+        room.setFont(room.getFont().deriveFont(20f));
+        JScrollPane showPanel = new JScrollPane(chatContent); 
         chatContent.setEditable(false);
-        jp.setBackground(Color.GREEN);
-        inputField = new JTextField(20);
+        //chatContent.setBounds(10,10,10,80);
+        jp.setBackground(Color.GREEN); 
+        inputField = new JTextField(20); 
+        inputField.setPreferredSize(new Dimension(150,20));
         sendBt = new JButton("Send");
-        jp.add(lb);
+        jp.add(room);
         jp.add(jp1);
         jp.add(jp2);
-        jp1.setLayout(new BorderLayout());
-        jp1.add(showPanel);
-        jp1.setSize(80, 80);
-        jp1.add(chatContent);
         jp.add(editinglist);
-
+        editinglist.setBorder(BorderFactory.createLineBorder(Color.GREEN, 1));
+        editinglist.setPreferredSize(new Dimension(30,50));
+        jp1.setLayout(new BorderLayout());
+        jp1.add(showPanel,BorderLayout.CENTER); 
+        jp1.setPreferredSize(new Dimension(200,500));   
         jp2.add(inputField);
         jp2.add(sendBt);
+        room.append("\n                Chat Room");
+        room.setBorder (BorderFactory.createLineBorder(Color.green,1));
+        room.setEditable(false);
 
         savebButton = new JButton("Save");
         savebButton.setToolTipText("Save");
@@ -333,7 +336,7 @@ public class DrawPictureFrame extends JFrame {
                 if (shape == 0) {
                     if (x > 0 && y > 0) {
                         if (rubber) {
-                            drawEraser();
+                            drawEraser(x, y);
                             sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p, null);
                         } else {
                             g.setColor(forecColor);
@@ -636,11 +639,11 @@ public class DrawPictureFrame extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-
                 try {
-                    s = JOptionPane.showInputDialog("Plz input your text beneath:");
-                    ImageIO.write(image, "jpeg", new File(s + ".jpeg"));
-                    System.out.println("Saved!");
+                    s = JOptionPane.showInputDialog("Plz input name beneath:");
+                    String s2 = JOptionPane.showInputDialog("Plz input the directory beneath:");
+                    ImageIO.write(image, "jpeg", new File( s2 + "\\" + s + ".jpeg"));
+                    // System.out.println("Saved!");
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -703,10 +706,10 @@ public class DrawPictureFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 g.setColor(backgroundColor);
-                g.fillRect(0, 0, 1160, 830);
+                g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 g.setColor(forecColor);
                 canvas.repaint();
-
+                sync(userId, "Clear", "end", backgroundColor, new Point(0, 0), "");
             }
         });
 
@@ -806,16 +809,24 @@ public class DrawPictureFrame extends JFrame {
     }
 
     public void drawpic(Object color, Point p1, Point p2, String shape, String message) {
+        if ((color == null || p1 == null || p2 == null || shape == null || message == null) && !shape.equals("Clear") ) {
+            return;
+        }
+
         int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);
         if (shapeIndex < 0) {
             System.out.println("Invalid shape");
             return;
         }
-
-        if (shapeIndex > 5) {
+        if (shapeIndex == 9) {
+            g.setColor(backgroundColor);
+            g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            g.setColor(forecColor);
+        }
+        else if (shapeIndex > 5) {
             // rubber
             this.eraser_valjue = shapeIndex - 6;
-            drawEraser();
+            drawEraser(p2.x, p2.y);
         } else if (shapeIndex == 0) {
             g.setColor((Color) color);
             g.drawLine(p1.x, p1.y, p2.x, p2.y);
@@ -849,7 +860,7 @@ public class DrawPictureFrame extends JFrame {
         }).start();
     }
 
-    private void drawEraser() {
+    private void drawEraser(int x, int y) {
         if (eraser_valjue == 1) {
             g.setColor(backgroundColor);
             g.fillRect(x, y, 30, 30);

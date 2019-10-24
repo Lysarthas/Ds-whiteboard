@@ -13,6 +13,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,9 @@ import rmi.share.*;
 public class DrawServer extends UnicastRemoteObject implements DrawInterface, Runnable {
 
     private static final long serialVersionUID = 1L;
-    ArrayList<DrawInterface> clients;
+
+    @Getter
+    volatile ArrayList<DrawInterface> clients;
 
     @Setter
     @Getter
@@ -98,7 +101,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
         }
     }
 
-    public boolean login(DrawInterface client, Identity id) {
+    public Boolean login(DrawInterface client, Identity id) {
         for (int i = 0; i < clients.size(); i++) {
             try {
                 Identity tempUser = clients.get(i).user();
@@ -110,9 +113,14 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
                 i--;
             }
         }
-
-        clients.add(client);
-        return true;
+        
+        int reply = JOptionPane.showConfirmDialog(this.pFrame, id.getName() + " want to join this room");
+        if (reply == JOptionPane.YES_OPTION) {
+            clients.add(client);
+            return true;
+        } else {
+            return null;
+        }
     }
 
     public ArrayList<String> getClientlist() throws RemoteException {
@@ -129,15 +137,14 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
         return clientname;
     }
 
-    public boolean removeClient(Identity id) throws RemoteException {
+    public int getClientIndexByName(String name) throws RemoteException {
         for (int i = 0; i < clients.size(); i++) {
-            Identity uid = clients.get(i).user();
-            if (uid.equals(id)) {
-                clients.remove(i);
-                return true;
+            String uName = clients.get(i).user().getName();
+            if (uName.equals(name)) {
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     @Override
@@ -147,11 +154,19 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
             String url = "rmi://" + this.IP + ":" + this.Port + "/RMIServer";
             LocateRegistry.createRegistry(Integer.parseInt(this.Port));
             Naming.rebind(url, server);
-            this.login(this, this.id);
+            this.clients.add(this);
 
             Locale.setDefault(Locale.ENGLISH);
             pFrame = DrawPictureFrame.drawfram(server, server);
+            pFrame.setTitle(id.getName());
             pFrame.setVisible(true);
+
+            pFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    closing();
+                }
+            });
         } catch (RemoteException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -160,6 +175,17 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
             e.printStackTrace();
         }
 
+    }
+
+    public void closing() {
+        for (int i = 1; i < clients.size(); i++) {
+            try {
+                clients.get(i).notify("The server is closing. You are offline now", true);
+            } catch (RemoteException e) {
+                // TODO Auto-generated catch block
+                // e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -172,6 +198,12 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
             e.printStackTrace();
         }
         return baos.toByteArray();
+    }
+
+    @Override
+    public void notify(String message, boolean isClosed) throws RemoteException {
+        // TODO Auto-generated method stub
+
     }
 
 }
