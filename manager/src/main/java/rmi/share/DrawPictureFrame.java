@@ -1,4 +1,4 @@
-package client.drawclient;
+package rmi.share;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -20,6 +20,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
+import lombok.Getter;
+import manager.drawserver.DrawServer;
 import rmi.share.DrawInterface;
 
 import java.awt.color.*;
@@ -28,10 +30,8 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
@@ -39,27 +39,27 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 
 public class DrawPictureFrame extends JFrame {
-	BufferedImage img = null;
+    BufferedImage img = null;
+    
+    @Getter
 	BufferedImage image = new BufferedImage(900, 830, BufferedImage.TYPE_INT_BGR);
 	Graphics gs = image.getGraphics();
 	Graphics2D g = (Graphics2D) gs;
-	public static DrawPictureFrame dpf_ins = null;
-	DrawPictureCanvas canvas = new DrawPictureCanvas();
+    public static DrawPictureFrame dpf_ins = null;
+    
+    @Getter
+    DrawPictureCanvas canvas = new DrawPictureCanvas();
 	Color forecColor = Color.black;
 	Color backgroundColor = Color.white;
-	DrawInterface Server;
-	DrawClient Client;
+	DrawServer Server;
 	
 	static Map<String, String> list = new Hashtable<String, String>();
 	
@@ -97,9 +97,6 @@ public class DrawPictureFrame extends JFrame {
 	private JTextArea chatContent;
 	private JTextArea editinglist;
 
-//	private JMenuItem strokeMenuItem1;
-//	private JMenuItem strokeMenuItem2;
-//	private JMenuItem strokeMenuItem3;
 	private JMenuItem clearMenuItem;
 	private JMenuItem foregroundMenuItem;
 	private JMenuItem backgroundItem;
@@ -126,8 +123,7 @@ public class DrawPictureFrame extends JFrame {
 
 
 	public DrawPictureFrame(DrawInterface server) {
-		this.Server = server;
-		this.Client = DrawClient.getclient();
+		this.Server = (DrawServer)server;
 		setResizable(false);
 		setTitle("CANVAS");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -170,7 +166,7 @@ public class DrawPictureFrame extends JFrame {
 		g.setColor(backgroundColor);
 		g.fillRect(0, 0, 1160, 830);
 		g.setColor(forecColor);
-		canvas.setImage(image);
+        canvas.setImage(image);
 		getContentPane().add(canvas);
 		
 
@@ -179,11 +175,9 @@ public class DrawPictureFrame extends JFrame {
 		
 		jp = new JPanel();
 		jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 1));
-		//jp.setSize(50, 10);
 		jp1 = new JPanel();
 		jp2 = new JPanel();
 		jp3 = new JPanel();
-		//jp2.setSize(20,10);
 		
 		lb = new JLabel("Chat Room");
 		lb.setSize(20, 10);
@@ -270,15 +264,6 @@ public class DrawPictureFrame extends JFrame {
 		exitMenuItem = new JMenuItem("Close");
 		systemMenu.add(exitMenuItem);
 
-//		JMenu strokeMenu = new JMenu("Lines");
-//		menuBar.add(strokeMenu);
-//		strokeMenuItem1 = new JMenuItem("Thin");
-//		strokeMenu.add(strokeMenuItem1);
-//		strokeMenuItem2 = new JMenuItem("Medium");
-//		strokeMenu.add(strokeMenuItem2);
-//		strokeMenuItem3 = new JMenuItem("Thick");
-//		strokeMenu.add(strokeMenuItem3);
-
 		JMenu colorMenu = new JMenu("Color");
 		menuBar.add(colorMenu);
 		foregroundMenuItem = new JMenuItem("Pencil Color");
@@ -323,9 +308,11 @@ public class DrawPictureFrame extends JFrame {
 								g.fillRect(x, y, 10, 10);
 							}
 						} else {
+							g.setColor(forecColor);
+							g.drawLine(x, y, e.getX(), e.getY());
 							Point p = e.getPoint();
 							try {
-								Server.broadcast(Client.id, "free", "drag", forecColor, p);
+								Server.broadcast(Server.user(), "free", "drag", forecColor, p);
 							} catch (RemoteException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -377,7 +364,7 @@ public class DrawPictureFrame extends JFrame {
 				}
 				
 				try {
-					Server.broadcast(Client.id, "", "start", forecColor, p);
+					Server.broadcast(Server.user(), "", "start", forecColor, p);
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -399,7 +386,7 @@ public class DrawPictureFrame extends JFrame {
 						  y = -1;
 						  x2=e.getX();
 						  y2=e.getY();
-						  //画线
+						  //锟斤拷锟斤拷
 						  g.setColor(forecColor);
 						  g.drawLine(x1,y1,x2,y2);
 						  canvas.repaint();
@@ -432,7 +419,7 @@ public class DrawPictureFrame extends JFrame {
 						x=-1;
 						y=-1;
 						try {
-							Server.broadcast(Client.id, "free", "end", forecColor, p);
+							Server.broadcast(Server.user(), "free", "end", forecColor, p);
 						} catch (RemoteException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -665,7 +652,6 @@ public class DrawPictureFrame extends JFrame {
 					e1.printStackTrace();
 				}
 				
-				
 			}
 		});
 		
@@ -720,39 +706,6 @@ public class DrawPictureFrame extends JFrame {
 				canvas.repaint();
 			}
 		});
-		
-//		// Thin菜单项
-//		strokeMenuItem1.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
-//
-//		// Medium菜单项
-//		strokeMenuItem2.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
-//
-//		// Thick菜单项
-//		strokeMenuItem3.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
 
 		foregroundMenuItem.addActionListener(new ActionListener() {
 
@@ -878,16 +831,6 @@ public class DrawPictureFrame extends JFrame {
 
 			}
 		});
-
-
-//		toolBar.addMouseMotionListener(new MouseMotionAdapter() {//工具栏添加鼠标事件监听
-//			@Override
-//			public void mouseMoved(MouseEvent e) {
-//				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));//设置鼠标的形状为默认光标
-//
-//			}
-//
-//		});
 	}
 	
 	public void drawpic(Object color, Point p1, Point p2, String shape) {

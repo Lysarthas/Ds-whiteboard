@@ -7,10 +7,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -33,6 +29,8 @@ public class UserManagementController implements UncaughtExceptionHandler {
 
     @FXML
     private ListView<String> userListView;
+
+    @Getter
     private ArrayList<String> userList = new ArrayList<String>();
 
     @Getter
@@ -77,10 +75,21 @@ public class UserManagementController implements UncaughtExceptionHandler {
 
     private void refreshUserList() throws RemoteException {
         new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             while (true) {
                 try {
                     this.userList = drawServer.getClientlist();
-                    userListView.getItems().setAll(userList);
+                    Platform.runLater(new Runnable(){
+                        @Override
+                        public void run() {
+                            userListView.getItems().setAll(getUserList());
+                        }
+                    });
                     try {
                         TimeUnit.SECONDS.sleep(5);
                     } catch (InterruptedException e) {

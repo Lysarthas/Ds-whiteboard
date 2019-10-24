@@ -1,14 +1,16 @@
-package client.drawclient;
+package rmi.share;
 
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.Image;
 
-public class DrawPictureCanvas extends Canvas{
-	private Image image=null;
+public class DrawPictureCanvas extends Canvas {
+    private static final long serialVersionUID = 3950771061853327150L;
+
+    private Image image = null;
 	
 	public void setImage(Image image) {
-		this.image=image;
+        this.image=image;
 	}
 	
 	@Override
@@ -18,6 +20,6 @@ public class DrawPictureCanvas extends Canvas{
 	
 	public void update(Graphics g) {
 		paint(g);
-	}
+    }
 }
 	

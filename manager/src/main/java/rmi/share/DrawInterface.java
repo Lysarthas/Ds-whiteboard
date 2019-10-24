@@ -9,5 +9,5 @@ public interface DrawInterface extends Remote {
 	public void broadcast(Identity editor, String shape, String timeline, Object color, Object o) throws RemoteException;
 	public void drawtask(Identity editor, String shape, String timeline, Object color, Object o) throws RemoteException;
 	public boolean login(DrawInterface client, Identity id) throws RemoteException;
-
+    public byte[] getCurrentGraph() throws RemoteException;
 }
