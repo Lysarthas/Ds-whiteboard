@@ -61,6 +61,13 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 			Point last = (Point)lpts.get(id.getName());
 			Point current = (Point)o;
 			DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+			lpts.put(id.getName(), o);
+		}
+		else if(status.equals("end")) {
+			Point last = (Point)lpts.get(id.getName());
+			Point current = (Point)o;
+			DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+			lpts.remove(id.getName());
 		}
 	}
 	
