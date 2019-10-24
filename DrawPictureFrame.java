@@ -24,6 +24,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -168,35 +169,40 @@ public class DrawPictureFrame extends JFrame {
 		getContentPane().add(jp, BorderLayout.EAST);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 
-		jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+		jp.setLayout(new BoxLayout(jp, BoxLayout.Y_AXIS));
 		
 		
-		editinglist = new JTextArea(20,10);
-		chatContent = new JTextArea(70,10);
-		room = new JTextArea(1,2);
+		editinglist = new JTextArea(10,10);
+		chatContent = new JTextArea(200,10);
+		room = new JTextArea(1,1);
+		room.setFont(room.getFont().deriveFont(20f));
+		
 		JScrollPane showPanel = new JScrollPane(chatContent);
 		chatContent.setEditable(false);
+		chatContent.setBounds(10,10,10,100);
 		jp.setBackground(Color.GREEN);
 		
 		inputField = new JTextField(20);	
+		inputField.setPreferredSize(new Dimension(150,20));
 		sendBt = new JButton("Send");
 		jp.add(room);
-		room.append("                           "
-				+ "          Chat Room");
-		room.setBorder (BorderFactory.createLineBorder(Color.green,1));
-		room.setEditable(false);
 		jp.add(jp1);
 		jp.add(jp2);
 		jp.add(editinglist);
-		
+		editinglist.setPreferredSize(new Dimension(30,30));
+
 		jp1.setLayout(new BorderLayout());
-		jp1.add(showPanel);
-		jp1.setSize(80,80);
-		jp1.add(chatContent);
+		jp1.add(showPanel,BorderLayout.CENTER);
+		jp1.setPreferredSize(new Dimension(100,350));
+				
 		jp2.add(inputField);
 		jp2.add(sendBt);
 
 
+		room.append("\n                Chat Room");
+		room.setBorder (BorderFactory.createLineBorder(Color.green,1));
+		room.setEditable(false);
+		
 		savebButton = new JButton("Save");
 		savebButton.setToolTipText("Save");
 		toolBar.add(savebButton);
@@ -334,7 +340,7 @@ public class DrawPictureFrame extends JFrame {
 				    	s = JOptionPane.showInputDialog("Plz input your text beneath:");
 				    	g.setColor(forecColor);
 				    	if (stroke_value == 3) {
-				    		g.setFont(new Font("Tahoma", Font.BOLD, 25));
+				    		g.setFont(new Font("Tahoma", Font.BOLD,25));
 				    	}
 				    	else if (stroke_value == 2) {
 				    		g.setFont(new Font("Tahoma", Font.BOLD, 20));
