@@ -1,4 +1,4 @@
-package client.drawclient;
+package manager.drawserver;
 
 import java.awt.Canvas;
 import java.awt.Graphics;

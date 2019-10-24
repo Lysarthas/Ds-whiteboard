@@ -59,6 +59,7 @@ public class DrawPictureFrame extends JFrame {
 
 	int x = -1;
 	int y = -1;
+	int stroke_value = 0;
 	static boolean rubber = false;
 	int eraser_valjue = 0;
 	int shape =0;
@@ -70,12 +71,10 @@ public class DrawPictureFrame extends JFrame {
 	/*
 	 * 创建按钮，菜单组件
 	 */
-	private JPanel useless;
-	private JLabel lb;
+	private JTextArea room;
 	private JPanel jp;
 	private JPanel jp1;
 	private JPanel jp2;
-	private JPanel jp3;
 	private JButton sendBt;
 	private JTextField inputField;
 	private JToolBar toolBar;
@@ -157,40 +156,43 @@ public class DrawPictureFrame extends JFrame {
 		
 
 		toolBar = new JToolBar();
-		useless = new JPanel();
+		
 		
 		jp = new JPanel();
-		jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 1));
+		jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
 		//jp.setSize(50, 10);
 		jp1 = new JPanel();
 		jp2 = new JPanel();
-		jp3 = new JPanel();
-		//jp2.setSize(20,10);
-		
-		lb = new JLabel("Chat Room");
-		lb.setSize(20, 10);
-		
+
+
 		getContentPane().add(jp, BorderLayout.EAST);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
+
 		jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
 		
 		
 		editinglist = new JTextArea(20,10);
 		chatContent = new JTextArea(70,10);
+		room = new JTextArea(1,2);
 		JScrollPane showPanel = new JScrollPane(chatContent);
 		chatContent.setEditable(false);
 		jp.setBackground(Color.GREEN);
+		
 		inputField = new JTextField(20);	
 		sendBt = new JButton("Send");
-		jp.add(lb);
+		jp.add(room);
+		room.append("                           "
+				+ "          Chat Room");
+		room.setBorder (BorderFactory.createLineBorder(Color.green,1));
+		room.setEditable(false);
 		jp.add(jp1);
 		jp.add(jp2);
+		jp.add(editinglist);
+		
 		jp1.setLayout(new BorderLayout());
 		jp1.add(showPanel);
 		jp1.setSize(80,80);
 		jp1.add(chatContent);
-		jp.add(editinglist);
-		
 		jp2.add(inputField);
 		jp2.add(sendBt);
 
@@ -251,15 +253,6 @@ public class DrawPictureFrame extends JFrame {
 		
 		exitMenuItem = new JMenuItem("Close");
 		systemMenu.add(exitMenuItem);
-
-//		JMenu strokeMenu = new JMenu("Lines");
-//		menuBar.add(strokeMenu);
-//		strokeMenuItem1 = new JMenuItem("Thin");
-//		strokeMenu.add(strokeMenuItem1);
-//		strokeMenuItem2 = new JMenuItem("Medium");
-//		strokeMenu.add(strokeMenuItem2);
-//		strokeMenuItem3 = new JMenuItem("Thick");
-//		strokeMenu.add(strokeMenuItem3);
 
 		JMenu colorMenu = new JMenu("Color");
 		menuBar.add(colorMenu);
@@ -340,6 +333,18 @@ public class DrawPictureFrame extends JFrame {
 				    if (shape == 5) {
 				    	s = JOptionPane.showInputDialog("Plz input your text beneath:");
 				    	g.setColor(forecColor);
+				    	if (stroke_value == 3) {
+				    		g.setFont(new Font("Tahoma", Font.BOLD, 25));
+				    	}
+				    	else if (stroke_value == 2) {
+				    		g.setFont(new Font("Tahoma", Font.BOLD, 20));
+				    	}
+				    	
+				    	else {
+				    		g.setFont(new Font("Tahoma", Font.BOLD, 15));
+				    	}
+				    	
+				    	
 				    	g.drawString(s, x1, y1);
 				    	canvas.repaint();
 				    }
@@ -423,6 +428,7 @@ public class DrawPictureFrame extends JFrame {
 				g.setStroke(bs);
 				rubber = false;
 				getMenuback();
+				stroke_value = 0;
 			}
 		});
 
@@ -434,6 +440,7 @@ public class DrawPictureFrame extends JFrame {
 				g.setStroke(bs);
 				rubber = false;
 				getMenuback();
+				stroke_value = 1;
 			}
 		});
 
@@ -445,6 +452,7 @@ public class DrawPictureFrame extends JFrame {
 				g.setStroke(bs);
 				rubber = false;
 				getMenuback();
+				stroke_value = 2;
 			}
 		});
 
@@ -460,6 +468,11 @@ public class DrawPictureFrame extends JFrame {
 					g.fillRect(0, 0, 1160, 830);
 					g.setColor(forecColor);
 					canvas.repaint();
+					list.put(username, "changed background color");
+					editinglist.setText("");
+					for (String key : list.keySet()) {
+					    editinglist.append(key + ":" + list.get(key));
+					}
 
 				}
 
@@ -524,6 +537,11 @@ public class DrawPictureFrame extends JFrame {
 					//s = JOptionPane.showInputDialog("Plz input your text beneath:");
 				} else {
 					getback();
+					list.put(username, "in the room");
+					editinglist.setText("");
+					for (String key : list.keySet()) {
+					    editinglist.append(key + ":" + list.get(key));
+					}
 				}
 
 			}
@@ -651,8 +669,10 @@ public class DrawPictureFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
-					s = JOptionPane.showInputDialog("Plz input your text beneath:");
-					ImageIO.write(image, "jpeg", new File(s + ".jpeg"));
+					
+					s = JOptionPane.showInputDialog("Plz input name beneath:");
+					String s2 = JOptionPane.showInputDialog("Plz input the directory beneath:");
+					ImageIO.write(image, "jpeg", new File( s2 + "\\" + s + ".jpeg"));
 					System.out.println("Saved!");
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -678,38 +698,6 @@ public class DrawPictureFrame extends JFrame {
 			}
 		});
 		
-//		// Thin菜单项
-//		strokeMenuItem1.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
-//
-//		// Medium菜单项
-//		strokeMenuItem2.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
-//
-//		// Thick菜单项
-//		strokeMenuItem3.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				BasicStroke bs = new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
-//				g.setStroke(bs);
-//				getButtonback();
-//			}
-//		});
 
 		foregroundMenuItem.addActionListener(new ActionListener() {
 
@@ -752,6 +740,11 @@ public class DrawPictureFrame extends JFrame {
 				g.fillRect(0, 0, 1160, 830);
 				g.setColor(forecColor);
 				canvas.repaint();
+				list.put(username, "clear the canvas");
+				editinglist.setText("");
+				for (String key : list.keySet()) {
+				    editinglist.append(key + ":" + list.get(key));
+				}
 
 			}
 		});

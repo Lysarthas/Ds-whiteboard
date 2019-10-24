@@ -1,4 +1,4 @@
-package client.drawclient;
+package manager.drawserver;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -58,8 +58,7 @@ public class DrawPictureFrame extends JFrame {
 	DrawPictureCanvas canvas = new DrawPictureCanvas();
 	Color forecColor = Color.black;
 	Color backgroundColor = Color.white;
-	DrawInterface Server;
-	DrawClient Client;
+	DrawServer Server;
 	
 	static Map<String, String> list = new Hashtable<String, String>();
 	
@@ -126,8 +125,7 @@ public class DrawPictureFrame extends JFrame {
 
 
 	public DrawPictureFrame(DrawInterface server) {
-		this.Server = server;
-		this.Client = DrawClient.getclient();
+		this.Server = (DrawServer)server;
 		setResizable(false);
 		setTitle("CANVAS");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -323,9 +321,11 @@ public class DrawPictureFrame extends JFrame {
 								g.fillRect(x, y, 10, 10);
 							}
 						} else {
+							g.setColor(forecColor);
+							g.drawLine(x, y, e.getX(), e.getY());
 							Point p = e.getPoint();
 							try {
-								Server.broadcast(Client.id, "free", "drag", forecColor, p);
+								Server.broadcast(Server.id, "free", "drag", forecColor, p);
 							} catch (RemoteException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -377,7 +377,7 @@ public class DrawPictureFrame extends JFrame {
 				}
 				
 				try {
-					Server.broadcast(Client.id, "", "start", forecColor, p);
+					Server.broadcast(Server.id, "", "start", forecColor, p);
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -432,7 +432,7 @@ public class DrawPictureFrame extends JFrame {
 						x=-1;
 						y=-1;
 						try {
-							Server.broadcast(Client.id, "free", "end", forecColor, p);
+							Server.broadcast(Server.id, "free", "end", forecColor, p);
 						} catch (RemoteException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
