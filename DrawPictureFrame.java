@@ -1,4 +1,5 @@
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -32,7 +33,10 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -50,6 +54,7 @@ public class DrawPictureFrame extends JFrame {
 	Color forecColor = Color.black;
 	Color backgroundColor = Color.white;
 	
+	static Map<String, String> list = new Hashtable<String, String>();
 	
 
 	int x = -1;
@@ -60,10 +65,12 @@ public class DrawPictureFrame extends JFrame {
 	int x1,y1,x2,y2;
 	String s;
 	String username = "User1";
+	
 
 	/*
 	 * 创建按钮，菜单组件
 	 */
+	private JPanel useless;
 	private JLabel lb;
 	private JPanel jp;
 	private JPanel jp1;
@@ -147,10 +154,13 @@ public class DrawPictureFrame extends JFrame {
 		g.setColor(forecColor);
 		canvas.setImage(image);
 		getContentPane().add(canvas);
+		
 
 		toolBar = new JToolBar();
+		useless = new JPanel();
 		
 		jp = new JPanel();
+		jp.setBorder(BorderFactory.createLineBorder(Color.GREEN, 1));
 		//jp.setSize(50, 10);
 		jp1 = new JPanel();
 		jp2 = new JPanel();
@@ -158,13 +168,15 @@ public class DrawPictureFrame extends JFrame {
 		//jp2.setSize(20,10);
 		
 		lb = new JLabel("Chat Room");
+		lb.setSize(20, 10);
+		
 		getContentPane().add(jp, BorderLayout.EAST);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
 		
 		
-		editinglist = new JTextArea(20,20);
-		chatContent = new JTextArea(70,20);
+		editinglist = new JTextArea(20,10);
+		chatContent = new JTextArea(70,10);
 		JScrollPane showPanel = new JScrollPane(chatContent);
 		chatContent.setEditable(false);
 		jp.setBackground(Color.GREEN);
@@ -176,16 +188,12 @@ public class DrawPictureFrame extends JFrame {
 		jp1.setLayout(new BorderLayout());
 		jp1.add(showPanel);
 		jp1.setSize(80,80);
-		jp.add(jp3);
 		jp1.add(chatContent);
-		
-		
 		jp.add(editinglist);
 		
 		jp2.add(inputField);
 		jp2.add(sendBt);
-		jp.add(jp3);
-		
+
 
 		savebButton = new JButton("Save");
 		savebButton.setToolTipText("Save");
@@ -305,8 +313,12 @@ public class DrawPictureFrame extends JFrame {
 					y = e.getY();
 					canvas.repaint();
 				}
+				list.put(username, "is editing");
 				editinglist.setText("");
-				editinglist.append(username + " is editing");
+				for (String key : list.keySet()) {
+				    editinglist.append(key + ":" + list.get(key));
+				}
+				
 			}
 
 			@Override
@@ -336,8 +348,11 @@ public class DrawPictureFrame extends JFrame {
 					x=-1;
 					y=-1;
 				}
+				list.put(username, "is editing");
 				editinglist.setText("");
-				editinglist.append(username + " is editing");
+				for (String key : list.keySet()) {
+				    editinglist.append(key + ":" + list.get(key));
+				}
 			}
 					
 			public void mouseReleased(MouseEvent e){
@@ -386,8 +401,13 @@ public class DrawPictureFrame extends JFrame {
 					x=-1;
 					y=-1;
 				}
+				list.put(username, "in the room");
 				editinglist.setText("");
-				editinglist.append(username + " in the room.");
+				for (String key : list.keySet()) {
+				    editinglist.append(key + ":" + list.get(key));
+				}
+				
+				
 			}
 			
 			
