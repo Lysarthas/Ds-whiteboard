@@ -1,11 +1,14 @@
 package client.drawclient;
 
+import java.awt.Point;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Hashtable;
+import java.util.Locale;
 
 import rmi.share.*;
 
@@ -20,6 +23,8 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 	int Port;
 	Identity id;
 	boolean connection = false;
+	Hashtable lpts = new Hashtable();
+	
 	
 	public static DrawClient clt_ins = null;
 	
@@ -46,12 +51,17 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 		return id;
 	}
 	
-	public void broadcast(String shape, String timeline, String color, Object o) throws RemoteException {
-		
-	}
+	public void broadcast(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException {}
 	
-	public void drawtask(String shape, String status, String color, Object o) throws RemoteException {
-		
+	public void drawtask(Identity id, String shape, String status, Object color, Object o) throws RemoteException {
+		if(status.equals("start")) {
+			lpts.put(id.getName(), o);
+		}
+		else if(status.equals("drag")) {
+			Point last = (Point)lpts.get(id.getName());
+			Point current = (Point)o;
+			DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+		}
 	}
 	
 	public boolean login(DrawInterface client, Identity id) throws RemoteException {
@@ -73,6 +83,9 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 			connect(serverinterface, this.id);
 			if(connection) {
 				System.out.println("join success");
+				Locale.setDefault(Locale.ENGLISH);
+				DrawPictureFrame frame = DrawPictureFrame.drawfram(serverinterface);
+				frame.setVisible(true);
 			}
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
