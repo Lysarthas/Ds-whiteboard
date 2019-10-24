@@ -23,6 +23,9 @@ repositories {
 
 dependencies {
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+	annotationProcessor 'org.projectlombok:lombok:1.18.8'
     
     // This dependency is found on compile classpath of this component and consumers.
     implementation 'com.google.guava:guava:27.0.1-jre'
@@ -69,7 +72,7 @@ sourceSets {
 task fatJar(type: Jar) {
 	manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',  
-        	'Main-Class': 'manager.App'
+        'Main-Class': 'manager.App'
     }
     baseName = "manager"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
