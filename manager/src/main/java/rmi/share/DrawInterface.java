@@ -1,4 +1,4 @@
-package manager.share;
+package rmi.share;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

@@ -4,7 +4,9 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.rmi.RemoteException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -47,7 +49,7 @@ public class UserManagementController implements UncaughtExceptionHandler {
         this.port = port;
     }
 
-    @FXML 
+    @FXML
     protected void startServer(ActionEvent event) throws RemoteException {
         this.logging("Starting the server");
         this.startServerButton.setDisable(true);
@@ -67,9 +69,30 @@ public class UserManagementController implements UncaughtExceptionHandler {
     }
 
     private void refreshUserList() throws RemoteException {
-        this.userList = this.drawServer.getClientlist();
-        observableList.setAll(this.userList);
-        userListView.setItems(observableList);
+        new Thread(() -> {
+            while (true) {
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                try {
+                    userList = drawServer.getClientlist();
+                    Platform.runLater(new Runnable(){
+                        @Override
+                        public void run() {
+                            observableList.setAll(userList);
+                            userListView.setItems(observableList);
+                        }
+                    });
+                } catch (RemoteException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                
+            }
+        }).start();
     }
 
     private void logging(String log) {

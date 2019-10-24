@@ -10,7 +10,7 @@
             "request": "launch",
             "mainClass": "manager.App",
             "projectName": "manager",
-            "args": ""
+            "args": "-p 8000"
         }
     ]
 }

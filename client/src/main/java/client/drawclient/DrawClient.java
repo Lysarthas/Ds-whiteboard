@@ -1,14 +1,21 @@
 package client.drawclient;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
-import client.share.*;
+import rmi.share.*;
 
-public class DrawClient implements DrawInterface,Runnable{
-	private DrawInterface server;
+public class DrawClient extends UnicastRemoteObject implements DrawInterface, Runnable, UncaughtExceptionHandler{
+	/**
+     *
+     */
+    private static final long serialVersionUID = -6635749533907857673L;
+
+    private DrawInterface server;
 	String IP, Username;
 	int Port;
 	Identity id;
@@ -27,18 +34,19 @@ public class DrawClient implements DrawInterface,Runnable{
 		return clt_ins;
 	}
 	
-	public DrawClient(int port, String ip, String name) {
+	public DrawClient(int port, String ip, String name) throws RemoteException {
+        Thread.currentThread().setUncaughtExceptionHandler(this);
 		this.IP = ip;
 		this.Port = port;
-		this.Username = name;
+        this.Username = name;
+        this.id = new Identity(this.Username);
 	}
 	
 	public Identity user() {
-		
 		return id;
 	}
 	
-	public void broadcast(String status, Object o) throws RemoteException {
+	public void broadcast(String shape, String timeline, String color, Object o) throws RemoteException {
 		
 	}
 	
@@ -51,7 +59,7 @@ public class DrawClient implements DrawInterface,Runnable{
 	}
 	
 	public void connect(DrawInterface serInf, Identity id) throws RemoteException {
-		this.server = serInf;
+        this.server = serInf;
 		connection = server.login(this, id);
 	}
 
@@ -64,7 +72,7 @@ public class DrawClient implements DrawInterface,Runnable{
 			DrawInterface serverinterface = (DrawInterface)Naming.lookup(url);
 			connect(serverinterface, this.id);
 			if(connection) {
-				
+				System.out.println("join success");
 			}
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -78,7 +86,11 @@ public class DrawClient implements DrawInterface,Runnable{
 		}
 		
 	}
-	
-	
 
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        if (e instanceof RemoteException) {
+            System.out.println("failed to connect to server");
+        }
+    }
 }

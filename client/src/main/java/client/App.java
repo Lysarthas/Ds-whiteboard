@@ -3,9 +3,9 @@
  */
 package client;
 
+import java.rmi.RemoteException;
 import java.util.Iterator;
 
-import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -16,13 +16,15 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
 
+import client.drawclient.DrawClient;
+
 public class App {
     private static int DEFAULT_PORT = 8888;
 
     private static int port = DEFAULT_PORT;
     private static String ip;
     private static String username;
-    
+
     public static void main(String[] args) {
         final Options options = getOptions();
         CommandLine cmdLine;
@@ -31,8 +33,14 @@ public class App {
             port = getIntValue(cmdLine, 'p', DEFAULT_PORT);
             ip = getValue(cmdLine, 's', null);
             username = getValue(cmdLine, 'n', null);
+            DrawClient drawClient = DrawClient.newclient(port, ip, username);
+            new Thread(drawClient).start();
         } catch (ParseException e) {
             handleParseException(e, options);
+            return;
+        } catch (RemoteException e) {
+            System.out.println("Cannot connect to remote server. Please check your configuration and try later");
+            System.exit(1);
             return;
         }
 

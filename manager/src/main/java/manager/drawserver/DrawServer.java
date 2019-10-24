@@ -8,8 +8,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import manager.share.DrawInterface;
-import manager.share.Identity;
+import rmi.share.DrawInterface;
+import rmi.share.Identity;
 
 public class DrawServer extends UnicastRemoteObject implements DrawInterface, Runnable{
 	
@@ -43,17 +43,30 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 	
 	public void broadcast(String shape, String timeline, String color, Object o) throws RemoteException{
 		for(int i=0; i < clients.size(); i++) {
-			clients.get(i).drawtask(shape, timeline, color, o);
+            try {
+                clients.get(i).drawtask(shape, timeline, color, o);
+            } catch (RemoteException e) {
+                clients.remove(i);
+                i--;
+            }
 		}
 	}
 	
-	public void drawtask(String shape, String timeline, String color, Object o) throws RemoteException{}
+	public void drawtask(String shape, String timeline, String color, Object o) throws RemoteException{
+
+    }
 	
-	public boolean login(DrawInterface client, Identity id) throws RemoteException {
+	public boolean login(DrawInterface client, Identity id) {
 		for(int i=0; i < clients.size(); i++) {
-			if(clients.get(i).user().equals(client.user())) {
-				return false;
-			}
+            try {
+                Identity tempUser = clients.get(i).user();
+                if (tempUser.equals(client.user())) {
+                    return false;
+                }
+            } catch (RemoteException e) {
+                clients.remove(i);
+                i--;
+            }
 		}
 		
 		clients.add(client);
@@ -61,9 +74,15 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 	}
 	
 	public ArrayList<String> getClientlist() throws RemoteException {
-		ArrayList<String> clientname = new ArrayList<>();
+		ArrayList<String> clientname = new ArrayList<String>();
 		for(int i=0; i< clients.size(); i++) {
-			clientname.add(clients.get(i).user().getName());
+            try {
+                String clientName = clients.get(i).user().getName();
+                clientname.add(clientName);
+            } catch (RemoteException e) {
+                clients.remove(i);
+                i--;
+            }	
 		}
 		return clientname;
 	}
@@ -82,7 +101,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 			Locale.setDefault(Locale.ENGLISH);
 			// DrawPictureFrame frame = new DrawPictureFrame();
 			// frame.setVisible(true);
-		} catch (RemoteException e) {
+		} catch (RemoteException e) { 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
