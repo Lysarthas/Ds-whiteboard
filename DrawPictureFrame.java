@@ -49,6 +49,8 @@ public class DrawPictureFrame extends JFrame {
 	DrawPictureCanvas canvas = new DrawPictureCanvas();
 	Color forecColor = Color.black;
 	Color backgroundColor = Color.white;
+	
+	
 
 	int x = -1;
 	int y = -1;
@@ -57,6 +59,8 @@ public class DrawPictureFrame extends JFrame {
 	int shape =0;
 	int x1,y1,x2,y2;
 	String s;
+	String username = "User1";
+
 	/*
 	 * 创建按钮，菜单组件
 	 */
@@ -153,7 +157,7 @@ public class DrawPictureFrame extends JFrame {
 		jp3 = new JPanel();
 		//jp2.setSize(20,10);
 		
-		lb = new JLabel("           Chat Room");
+		lb = new JLabel("Chat Room");
 		getContentPane().add(jp, BorderLayout.EAST);
 		getContentPane().add(toolBar, BorderLayout.NORTH);
 		jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -301,6 +305,8 @@ public class DrawPictureFrame extends JFrame {
 					y = e.getY();
 					canvas.repaint();
 				}
+				editinglist.setText("");
+				editinglist.append(username + " is editing");
 			}
 
 			@Override
@@ -330,6 +336,8 @@ public class DrawPictureFrame extends JFrame {
 					x=-1;
 					y=-1;
 				}
+				editinglist.setText("");
+				editinglist.append(username + " is editing");
 			}
 					
 			public void mouseReleased(MouseEvent e){
@@ -378,7 +386,11 @@ public class DrawPictureFrame extends JFrame {
 					x=-1;
 					y=-1;
 				}
+				editinglist.setText("");
+				editinglist.append(username + " in the room.");
 			}
+			
+			
 		});
 
 		
@@ -466,7 +478,7 @@ public class DrawPictureFrame extends JFrame {
 					else {
 						chatContent.append("Usre 1:"+content+"\n");
 					}
-					editinglist.append("User1 editing\n");
+					
 					
 					
 				}else{
