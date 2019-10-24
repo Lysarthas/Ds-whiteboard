@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,7 +16,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import lombok.Getter;
+import lombok.Setter;
 import manager.drawserver.DrawServer;
+import rmi.share.Identity;
 
 public class UserManagementController implements UncaughtExceptionHandler {
     @FXML
@@ -29,9 +34,14 @@ public class UserManagementController implements UncaughtExceptionHandler {
     @FXML
     private ListView<String> userListView;
     private ArrayList<String> userList = new ArrayList<String>();
-    private ObservableList<String> observableList = FXCollections.observableArrayList();
 
+    @Getter
+    @Setter
     private int port;
+
+    @Getter
+    @Setter
+    private String userName;
 
     private DrawServer drawServer;
     private Thread drawServerThread;
@@ -45,16 +55,13 @@ public class UserManagementController implements UncaughtExceptionHandler {
         this.startServerButton.setDisable(false);
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
     @FXML
-    protected void startServer(ActionEvent event) throws RemoteException {
+    protected void startServer(ActionEvent event) throws RemoteException, InterruptedException {
         this.logging("Starting the server");
         this.startServerButton.setDisable(true);
         this.stopServerButton.setDisable(false);
         this.drawServer = DrawServer.newserver(Integer.toString(this.port));
+        this.drawServer.setId(new Identity(this.userName));
         this.drawServerThread = new Thread(this.drawServer);
         this.drawServerThread.start();
         this.refreshUserList();
@@ -72,25 +79,18 @@ public class UserManagementController implements UncaughtExceptionHandler {
         new Thread(() -> {
             while (true) {
                 try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                try {
-                    userList = drawServer.getClientlist();
-                    Platform.runLater(new Runnable(){
-                        @Override
-                        public void run() {
-                            observableList.setAll(userList);
-                            userListView.setItems(observableList);
-                        }
-                    });
+                    this.userList = drawServer.getClientlist();
+                    userListView.getItems().setAll(userList);
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 } catch (RemoteException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                
             }
         }).start();
     }

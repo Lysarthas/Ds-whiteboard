@@ -8,14 +8,18 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import lombok.Setter;
 import rmi.share.DrawInterface;
 import rmi.share.Identity;
 
 public class DrawServer extends UnicastRemoteObject implements DrawInterface, Runnable{
 	
 	private static final long serialVersionUID = 1L;
-	ArrayList<DrawInterface> clients;
-	Identity id;
+    ArrayList<DrawInterface> clients;
+
+    @Setter
+    Identity id;
+    
 	String IP, Port;
 	private static DrawServer serv_ins = null;
 	
@@ -83,7 +87,8 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
                 clients.remove(i);
                 i--;
             }	
-		}
+        }
+        clientname.add(this.id.getName());
 		return clientname;
 	}
 	
@@ -105,7 +110,8 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 			String url = "rmi://"+this.IP+":"+this.Port+"/RMIServer";
 			LocateRegistry.createRegistry(Integer.parseInt(this.Port));
 			Naming.rebind(url, server);
-			Locale.setDefault(Locale.ENGLISH);
+            Locale.setDefault(Locale.ENGLISH);
+            this.login(this, this.id);
 			// DrawPictureFrame frame = new DrawPictureFrame();
 			// frame.setVisible(true);
 		} catch (RemoteException e) { 

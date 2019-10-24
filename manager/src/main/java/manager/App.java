@@ -33,6 +33,7 @@ public class App extends Application {
     private static final int MIN_WIDTH = 500;
 
     private static int port = DEFAULT_PORT;
+    private static String username;
 
     public static void main(String[] args) {
         final Options options = getOptions();
@@ -40,6 +41,7 @@ public class App extends Application {
         try {
             cmdLine = new DefaultParser().parse(options, args);
             port = getIntValue(cmdLine, 'p', DEFAULT_PORT);
+            username = getValue(cmdLine, 'n', null);
         } catch (ParseException e) {
             handleParseException(e, options);
             return;
@@ -66,6 +68,7 @@ public class App extends Application {
         GridPane root = fxmlLoader.load();
         UserManagementController umc = fxmlLoader.<UserManagementController>getController();
         umc.setPort(port);
+        umc.setUserName(username);
 
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
@@ -87,6 +90,14 @@ public class App extends Application {
                 .hasArg()
                 .argName("PORT")
                 .type(Number.class)
+                .build());
+
+        options.addOption(Option.builder("n")
+                .longOpt("name")
+                .desc("username")
+                .required(true)
+                .hasArg()
+                .argName("USERNAME")
                 .build());
         
         options.addOption(Option.builder("h")
