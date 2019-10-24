@@ -1,13 +1,14 @@
 package manager.drawserver;
 
+import java.awt.Point;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Locale;
-
 import rmi.share.DrawInterface;
 import rmi.share.Identity;
 
@@ -18,6 +19,7 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 	Identity id;
 	String IP, Port;
 	private static DrawServer serv_ins = null;
+	Hashtable lpts = new Hashtable();
 	
 	private DrawServer(String Port) throws RemoteException{
 		clients = new ArrayList<DrawInterface>();
@@ -52,9 +54,23 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 		}
 	}
 	
-	public void drawtask(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException{
-
-    }
+	public void drawtask(Identity id, String shape, String status, Object color, Object o) throws RemoteException {
+		if(status.equals("start")) {
+			lpts.put(id.getName(), o);
+		}
+		else if(status.equals("drag")) {
+			Point last = (Point)lpts.get(id.getName());
+			Point current = (Point)o;
+			DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+			lpts.put(id.getName(), o);
+		}
+		else if(status.equals("end")) {
+			Point last = (Point)lpts.get(id.getName());
+			Point current = (Point)o;
+			DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+			lpts.remove(id.getName());
+		}
+	}
 	
 	public boolean login(DrawInterface client, Identity id) {
 		for(int i=0; i < clients.size(); i++) {
@@ -106,8 +122,8 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 			LocateRegistry.createRegistry(Integer.parseInt(this.Port));
 			Naming.rebind(url, server);
 			Locale.setDefault(Locale.ENGLISH);
-			// DrawPictureFrame frame = new DrawPictureFrame();
-			// frame.setVisible(true);
+			DrawPictureFrame frame = DrawPictureFrame.drawfram(server);
+			frame.setVisible(true);
 		} catch (RemoteException e) { 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
