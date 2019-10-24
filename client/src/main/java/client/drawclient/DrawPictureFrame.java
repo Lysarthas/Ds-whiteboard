@@ -358,20 +358,32 @@ public class DrawPictureFrame extends JFrame {
 		canvas.addMouseListener(new MouseAdapter() {
 			//mouse pressed
 			public void mousePressed(MouseEvent e){
+				Point p = e.getPoint();
 				if (rubber == false) {
 					x1=e.getX();
 				    y1=e.getY();
+				    
 				    if (shape == 5) {
 				    	s = JOptionPane.showInputDialog("Plz input your text beneath:");
 				    	g.setColor(forecColor);
 				    	g.drawString(s, x1, y1);
 				    	canvas.repaint();
 				    }
+				    
 				}
 				else {
 					x=-1;
 					y=-1;
 				}
+				
+				try {
+					Server.broadcast(Client.id, "", "start", forecColor, p);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
 				list.put(username, "is editing");
 				editinglist.setText("");
 				for (String key : list.keySet()) {
@@ -380,7 +392,7 @@ public class DrawPictureFrame extends JFrame {
 			}
 					
 			public void mouseReleased(MouseEvent e){
-				  //获取松开信息
+				Point p = e.getPoint();
 				if (rubber == false) {
 					if (shape == 1) {
 						  x = -1;
@@ -419,12 +431,19 @@ public class DrawPictureFrame extends JFrame {
 					else {
 						x=-1;
 						y=-1;
+						try {
+							Server.broadcast(Client.id, "free", "end", forecColor, p);
+						} catch (RemoteException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				} 
 				else{
 					x=-1;
 					y=-1;
 				}
+				
 				list.put(username, "in the room");
 				editinglist.setText("");
 				for (String key : list.keySet()) {
@@ -874,6 +893,7 @@ public class DrawPictureFrame extends JFrame {
 	public void drawpic(Object color, Point p1, Point p2, String shape) {
 		g.setColor((Color)color);
 		g.drawLine(p1.x, p1.y, p2.x, p2.y);
+		canvas.repaint();
 	}
 
 
