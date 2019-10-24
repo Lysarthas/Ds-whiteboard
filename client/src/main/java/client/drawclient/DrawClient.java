@@ -86,7 +86,10 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 				Locale.setDefault(Locale.ENGLISH);
 				DrawPictureFrame frame = DrawPictureFrame.drawfram(serverinterface);
 				frame.setVisible(true);
-			}
+            } else {
+                System.out.println("You cannot join this room maybe caused by duplicate user name. You can try again with different username later");
+                System.exit(1);
+            }
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
