@@ -57,23 +57,37 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
         return id;
     }
 
-    public void broadcast(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException {
+    public void broadcast(Identity id, String shape, String timeline, Object color, Object o, String message) throws RemoteException {
     }
 
-    public void drawtask(Identity id, String shape, String status, Object color, Object o) throws RemoteException {
+    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message) throws RemoteException {
+        if (shape != null) {
+            this.pFrame.showEditing(id);
+        }
+
+        if (shape == null) {
+            this.chattask(id, message);
+            return;
+        }
+
         if (status.equals("start")) {
             lpts.put(id.getName(), o);
         } else if (status.equals("drag") && DrawPictureFrame.isDrag(shape)) {
             Point last = (Point) lpts.get(id.getName());
             Point current = (Point) o;
-            DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+            DrawPictureFrame.getFrame().drawpic(color, last, current, shape, message);
             lpts.put(id.getName(), o);
         } else if (status.equals("end")) {
             Point last = (Point) lpts.get(id.getName());
             Point current = (Point) o;
-            DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+            DrawPictureFrame.getFrame().drawpic(color, last, current, shape, message);
             lpts.remove(id.getName());
         }
+    }
+
+    @Override
+    public void chattask(Identity editor, String message) throws RemoteException {
+        pFrame.displayMessage(editor, message);
     }
 
     public boolean login(DrawInterface client, Identity id) throws RemoteException {

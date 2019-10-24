@@ -54,7 +54,8 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 
 public class DrawPictureFrame extends JFrame {
-    public static String[] SHAPE_MAP = new String[]{"Free", "Straight", "Rectangle", "Oval", "Circle", "Text", "Rubber1", "Rubber2", "Rubber3"};
+    public static String[] SHAPE_MAP = new String[] { "Free", "Straight", "Rectangle", "Oval", "Circle", "Text",
+            "Rubber1", "Rubber2", "Rubber3" };
 
     BufferedImage img = null;
 
@@ -107,6 +108,7 @@ public class DrawPictureFrame extends JFrame {
     private JButton savebButton;
     private JTextArea chatContent;
     private JTextArea editinglist;
+    private boolean isEditingchange;
 
     // private JMenuItem strokeMenuItem1;
     // private JMenuItem strokeMenuItem2;
@@ -297,6 +299,29 @@ public class DrawPictureFrame extends JFrame {
         eraserMenuItem2 = new JMenuItem("Large Eraser");
         erasers.add(eraserMenuItem2);
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    isEditingchange = false;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    if (!isEditingchange) {
+                        editinglist.setText("No one is editing");
+                    }
+                }
+            }
+        }).start();
     }
 
     private void addListener() {
@@ -309,22 +334,22 @@ public class DrawPictureFrame extends JFrame {
                     if (x > 0 && y > 0) {
                         if (rubber) {
                             drawEraser();
-                            sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p);
+                            sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p, null);
                         } else {
                             g.setColor(forecColor);
                             g.drawLine(x, y, e.getX(), e.getY());
-                            sync(userId, SHAPE_MAP[shape], "drag", forecColor, p);
+                            sync(userId, SHAPE_MAP[shape], "drag", forecColor, p, null);
                         }
                     }
                     x = e.getX();
                     y = e.getY();
                     canvas.repaint();
                 }
-                list.put(username, "is editing");
-                editinglist.setText("");
-                for (String key : list.keySet()) {
-                    editinglist.append(key + ":" + list.get(key));
-                }
+                // list.put(username, "is editing");
+                // editinglist.setText("");
+                // for (String key : list.keySet()) {
+                // editinglist.append(key + ":" + list.get(key));
+                // }
 
             }
 
@@ -351,6 +376,7 @@ public class DrawPictureFrame extends JFrame {
                         g.setColor(forecColor);
                         g.drawString(s, x1, y1);
                         canvas.repaint();
+                        sync(userId, "Text", "end", forecColor, p, s);
                     }
 
                 } else {
@@ -358,18 +384,11 @@ public class DrawPictureFrame extends JFrame {
                     y = -1;
                 }
 
-                try {
-                    Server.broadcast(userId, "", "start", forecColor, p);
-                } catch (RemoteException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
-
-                list.put(username, "is editing");
-                editinglist.setText("");
-                for (String key : list.keySet()) {
-                    editinglist.append(key + ":" + list.get(key));
-                }
+                // list.put(username, "is editing");
+                // editinglist.setText("");
+                // for (String key : list.keySet()) {
+                // editinglist.append(key + ":" + list.get(key));
+                // }
             }
 
             public void mouseReleased(MouseEvent e) {
@@ -378,20 +397,18 @@ public class DrawPictureFrame extends JFrame {
                     x2 = e.getX();
                     y2 = e.getY();
                     normalDraw(shape, forecColor, x1, y1, x2, y2);
-                    sync(userId, SHAPE_MAP[shape], "end", forecColor, p);
+                    sync(userId, SHAPE_MAP[shape], "end", forecColor, p, null);
                 } else {
                     x = -1;
                     y = -1;
                 }
 
-                list.put(username, "in the room");
-                editinglist.setText("");
-                for (String key : list.keySet()) {
-                    editinglist.append(key + ":" + list.get(key));
-                }
-
+                // list.put(username, "in the room");
+                // editinglist.setText("");
+                // for (String key : list.keySet()) {
+                // editinglist.append(key + ":" + list.get(key));
+                // }
             }
-
         });
 
         strokeButton1.addActionListener(new ActionListener() {
@@ -464,15 +481,16 @@ public class DrawPictureFrame extends JFrame {
                 String content = inputField.getText();
                 if (content != null && !content.trim().equals("")) {
                     if (content.length() > 60) {
-                        chatContent.append("Usre 1:" + content.substring(0, 29) + "\n" + content.substring(30, 59)
-                                + "\n" + content.substring(60, content.length() - 1) + "\n");
+                        chatContent.append("User " + userId.getName() + ":" + content.substring(0, 29) + "\n"
+                                + content.substring(30, 59) + "\n" + content.substring(60, content.length() - 1)
+                                + "\n");
                     } else if (content.length() > 30) {
-                        chatContent.append("Usre 1:" + content.substring(0, 29) + "\n"
+                        chatContent.append("User " + userId.getName() + ":" + content.substring(0, 29) + "\n"
                                 + content.substring(30, content.length() - 1) + "\n");
                     } else {
-                        chatContent.append("Usre 1:" + content + "\n");
+                        chatContent.append("User " + userId.getName() + ":" + content + "\n");
                     }
-
+                    sync(userId, null, null, null, null, content);
                 } else {
                     JOptionPane.showMessageDialog(null, "Input can't be empty", "Warning",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -647,42 +665,6 @@ public class DrawPictureFrame extends JFrame {
             }
         });
 
-        // // Thin�˵���
-        // strokeMenuItem1.addActionListener(new ActionListener() {
-        //
-        // @Override
-        // public void actionPerformed(ActionEvent e) {
-        // BasicStroke bs = new BasicStroke(1, BasicStroke.CAP_BUTT,
-        // BasicStroke.JOIN_MITER);
-        // g.setStroke(bs);
-        // getButtonback();
-        // }
-        // });
-        //
-        // // Medium�˵���
-        // strokeMenuItem2.addActionListener(new ActionListener() {
-        //
-        // @Override
-        // public void actionPerformed(ActionEvent e) {
-        // BasicStroke bs = new BasicStroke(2, BasicStroke.CAP_BUTT,
-        // BasicStroke.JOIN_MITER);
-        // g.setStroke(bs);
-        // getButtonback();
-        // }
-        // });
-        //
-        // // Thick�˵���
-        // strokeMenuItem3.addActionListener(new ActionListener() {
-        //
-        // @Override
-        // public void actionPerformed(ActionEvent e) {
-        // BasicStroke bs = new BasicStroke(4, BasicStroke.CAP_BUTT,
-        // BasicStroke.JOIN_MITER);
-        // g.setStroke(bs);
-        // getButtonback();
-        // }
-        // });
-
         foregroundMenuItem.addActionListener(new ActionListener() {
 
             @Override
@@ -807,13 +789,29 @@ public class DrawPictureFrame extends JFrame {
         });
     }
 
-    public void drawpic(Object color, Point p1, Point p2, String shape) {
+    public void displayMessage(Identity id, String message) {
+        String userName = id.getName();
+        String content = message;
+        if (content != null && !content.trim().equals("")) {
+            if (content.length() > 60) {
+                chatContent.append("User " + userName + ":" + content.substring(0, 29) + "\n"
+                        + content.substring(30, 59) + "\n" + content.substring(60, content.length() - 1) + "\n");
+            } else if (content.length() > 30) {
+                chatContent.append("User " + userName + ":" + content.substring(0, 29) + "\n"
+                        + content.substring(30, content.length() - 1) + "\n");
+            } else {
+                chatContent.append("User " + userName + ":" + content + "\n");
+            }
+        }
+    }
+
+    public void drawpic(Object color, Point p1, Point p2, String shape, String message) {
         int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);
         if (shapeIndex < 0) {
             System.out.println("Invalid shape");
             return;
         }
-        
+
         if (shapeIndex > 5) {
             // rubber
             this.eraser_valjue = shapeIndex - 6;
@@ -821,20 +819,23 @@ public class DrawPictureFrame extends JFrame {
         } else if (shapeIndex == 0) {
             g.setColor((Color) color);
             g.drawLine(p1.x, p1.y, p2.x, p2.y);
+        } else if (shapeIndex == 5) {
+            g.setColor((Color) color);
+            g.drawString(message, p2.x, p2.y);
         } else {
-            normalDraw(shapeIndex, (Color)color, p1.x, p1.y, p2.x, p2.y);
+            normalDraw(shapeIndex, (Color) color, p1.x, p1.y, p2.x, p2.y);
         }
-        
+
         canvas.repaint();
     }
 
-    public void sync(Identity id, String shape, String timeline, Object color, Object o) {
+    public void sync(Identity id, String shape, String timeline, Object color, Object o, String message) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // TODO Auto-generated method stub
                 try {
-                    Server.broadcast(id, shape, timeline, color, o);
+                    Server.broadcast(id, shape, timeline, color, o, message);
                 } catch (RemoteException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -884,5 +885,10 @@ public class DrawPictureFrame extends JFrame {
     public static boolean isDrag(String shape) {
         int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);
         return shapeIndex == 0 || shapeIndex > 5;
+    }
+
+    public void showEditing(Identity id) {
+        editinglist.setText(id.getName() + " is editing....");
+        isEditingchange = true;
     }
 }

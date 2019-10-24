@@ -54,13 +54,13 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
         return id;
     }
 
-    public void broadcast(Identity id, String shape, String timeline, Object color, Object o) throws RemoteException {
+    public void broadcast(Identity id, String shape, String timeline, Object color, Object o, String message) throws RemoteException {
         for (int i = 0; i < clients.size(); i++) {
             if (clients.get(i).user().equals(id)) {
                 continue;
             }
             try {
-                clients.get(i).drawtask(id, shape, timeline, color, o);
+                clients.get(i).drawtask(id, shape, timeline, color, o, message);
             } catch (RemoteException e) {
                 clients.remove(i);
                 i--;
@@ -68,18 +68,32 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
         }
     }
 
-    public void drawtask(Identity id, String shape, String status, Object color, Object o) throws RemoteException {
+    @Override
+    public void chattask(Identity editor, String message) throws RemoteException {
+        pFrame.displayMessage(editor, message);
+    }
+
+    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message) throws RemoteException {
+        if (shape != null) {
+            this.pFrame.showEditing(id);
+        }
+
+        if (shape == null) {
+            this.chattask(id, message);
+            return;
+        }
+
         if (status.equals("start")) {
             lpts.put(id.getName(), o);
         } else if (status.equals("drag") && DrawPictureFrame.isDrag(shape)) {
             Point last = (Point) lpts.get(id.getName());
             Point current = (Point) o;
-            DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+            DrawPictureFrame.getFrame().drawpic(color, last, current, shape, message);
             lpts.put(id.getName(), o);
         } else if (status.equals("end")) {
             Point last = (Point) lpts.get(id.getName());
             Point current = (Point) o;
-            DrawPictureFrame.getFrame().drawpic(color, last, current, shape);
+            DrawPictureFrame.getFrame().drawpic(color, last, current, shape, message);
             lpts.remove(id.getName());
         }
     }
