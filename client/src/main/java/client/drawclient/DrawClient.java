@@ -78,8 +78,7 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			this.uncaughtException(Thread.currentThread(), e);
 		} catch (NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -92,5 +91,6 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
         if (e instanceof RemoteException) {
             System.out.println("failed to connect to server");
         }
+        System.exit(1);;
     }
 }
