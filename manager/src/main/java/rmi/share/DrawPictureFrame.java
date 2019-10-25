@@ -337,11 +337,11 @@ public class DrawPictureFrame extends JFrame {
                     if (x > 0 && y > 0) {
                         if (rubber) {
                             drawEraser(x, y);
-                            sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p, null);
+                            sync(userId, SHAPE_MAP[eraser_valjue + 6], "drag", forecColor, p, "");
                         } else {
                             g.setColor(forecColor);
                             g.drawLine(x, y, e.getX(), e.getY());
-                            sync(userId, SHAPE_MAP[shape], "drag", forecColor, p, null);
+                            sync(userId, SHAPE_MAP[shape], "drag", forecColor, p, "");
                         }
                     }
                     x = e.getX();
@@ -377,9 +377,12 @@ public class DrawPictureFrame extends JFrame {
                     if (shape == 5) {
                         s = JOptionPane.showInputDialog("Plz input your text beneath:");
                         g.setColor(forecColor);
-                        g.drawString(s, x1, y1);
-                        canvas.repaint();
-                        sync(userId, "Text", "end", forecColor, p, s);
+                        if (s != null && !s.isEmpty()) {
+                            g.drawString(s, x1, y1);
+                            canvas.repaint();
+                            sync(userId, "Text", "end", forecColor, p, s);
+                        }
+                        s = "";
                     }
                     sync(userId, "Free", "start", forecColor, p, "");
                 } else {
@@ -400,7 +403,7 @@ public class DrawPictureFrame extends JFrame {
                     x2 = e.getX();
                     y2 = e.getY();
                     normalDraw(shape, forecColor, x1, y1, x2, y2);
-                    sync(userId, SHAPE_MAP[shape], "end", forecColor, p, null);
+                    sync(userId, SHAPE_MAP[shape], "end", forecColor, p, "");
                 } else {
                     x = -1;
                     y = -1;
@@ -493,7 +496,7 @@ public class DrawPictureFrame extends JFrame {
                     } else {
                         chatContent.append("User " + userId.getName() + ":" + content + "\n");
                     }
-                    sync(userId, null, null, null, null, content);
+                    sync(userId, "chat", "", forecColor, new Point(0, 0), content);
                 } else {
                     JOptionPane.showMessageDialog(null, "Input can't be empty", "Warning",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -665,6 +668,12 @@ public class DrawPictureFrame extends JFrame {
                 }
                 g.drawImage(img, 0, 0, null);
                 canvas.repaint();
+                try {
+                    Server.broadcast(userId, "", "upload", forecColor, new Point(0, 0), "");
+                } catch (RemoteException e1) {
+                    // TODO Auto-generated catch block
+                    // e1.printStackTrace();
+                }
             }
         });
 
@@ -809,8 +818,19 @@ public class DrawPictureFrame extends JFrame {
     }
 
     public void drawpic(Object color, Point p1, Point p2, String shape, String message) {
-        if ((color == null || p1 == null || p2 == null || shape == null || message == null) && !shape.equals("Clear") ) {
-            return;
+        // if ((color == null || p1 == null || p2 == null || shape == null || message == null) && !shape.equals("Clear") ) {
+        //     return;
+        // }
+        if (p1 == null) {
+            p1 = new Point(0, 0);
+        }
+
+        if (p2 == null) {
+            p2 = new Point(0, 0);
+        }
+
+        if (message == null) {
+            message = "";
         }
 
         int shapeIndex = Arrays.asList(SHAPE_MAP).indexOf(shape);

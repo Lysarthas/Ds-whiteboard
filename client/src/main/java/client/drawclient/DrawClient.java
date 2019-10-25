@@ -3,6 +3,7 @@ package client.drawclient;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
@@ -63,13 +64,12 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
             throws RemoteException {
     }
 
-    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message)
-            throws RemoteException {
-        if (shape != null) {
+    public void drawtask(Identity id, String shape, String status, Object color, Object o, String message) throws RemoteException {
+        if (shape != null && !shape.isEmpty()) {
             this.pFrame.showEditing(id);
         }
 
-        if (shape == null) {
+        if (shape.isEmpty() || shape == null || shape.equals("chat")) {
             this.chattask(id, message);
             return;
         }
@@ -157,8 +157,14 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
 
     @Override
     public byte[] getCurrentGraph() throws RemoteException {
-        // TODO Auto-generated method stub
-        return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(pFrame.getImage(), "png", baos);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return baos.toByteArray();
     }
 
     @Override
@@ -176,6 +182,20 @@ public class DrawClient extends UnicastRemoteObject implements DrawInterface, Ru
                 System.exit(0);
             }
         }).start();
+    }
+
+    @Override
+    public void drawImage(byte[] byteImage) throws RemoteException {
+        // TODO Auto-generated method stub
+        BufferedImage bImage2;
+        try {
+            bImage2 = ImageIO.read(new ByteArrayInputStream(byteImage));
+            pFrame.getG().drawImage(bImage2, 0, 0, null);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        pFrame.getCanvas().repaint();
     }
 
 }

@@ -11,5 +11,6 @@ public interface DrawInterface extends Remote {
     public void chattask(Identity editor, String message) throws RemoteException;
 	public Boolean login(DrawInterface client, Identity id) throws RemoteException;
     public byte[] getCurrentGraph() throws RemoteException;
+    public void drawImage(byte[] byteImage) throws RemoteException;
     public void notify(String message, boolean isClosed) throws RemoteException;
 }

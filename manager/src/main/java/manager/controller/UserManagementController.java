@@ -30,8 +30,8 @@ public class UserManagementController implements UncaughtExceptionHandler {
     @FXML
     private Button startServerButton;
 
-    @FXML
-    private Button stopServerButton;
+    // @FXML
+    // private Button stopServerButton;
 
     @FXML
     private TextArea serverOutput;
@@ -60,7 +60,7 @@ public class UserManagementController implements UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
         serverOutput.appendText("Welcome!!\n");
         userListView.setEditable(false);
-        this.stopServerButton.setDisable(true);
+        // this.stopServerButton.setDisable(true);
         this.startServerButton.setDisable(false);
     }
 
@@ -68,7 +68,7 @@ public class UserManagementController implements UncaughtExceptionHandler {
     protected void startServer(ActionEvent event) throws RemoteException, InterruptedException {
         this.logging("Starting the server");
         this.startServerButton.setDisable(true);
-        this.stopServerButton.setDisable(false);
+        // this.stopServerButton.setDisable(false);
         this.drawServer = DrawServer.newserver(Integer.toString(this.port));
         this.drawServer.setId(new Identity(this.userName));
         this.drawServerThread = new Thread(this.drawServer);
@@ -77,12 +77,12 @@ public class UserManagementController implements UncaughtExceptionHandler {
         this.logging("Server started");
     }
 
-    @FXML
-    protected void stopServer(ActionEvent event) {
-        this.stopServerButton.setDisable(true);
-        this.startServerButton.setDisable(false);
-        this.logging("Stopping the server");
-    }
+    // @FXML
+    // protected void stopServer(ActionEvent event) {
+    //     this.stopServerButton.setDisable(true);
+    //     this.startServerButton.setDisable(false);
+    //     this.logging("Stopping the server");
+    // }
 
     private void refreshUserList() throws RemoteException {
         new Thread(() -> {

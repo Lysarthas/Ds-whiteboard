@@ -1,6 +1,7 @@
 package manager.drawserver;
 
 import java.awt.Point;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,6 +12,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -58,12 +60,21 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
     }
 
     public void broadcast(Identity id, String shape, String timeline, Object color, Object o, String message) throws RemoteException {
+        byte[] bImage = null;
+        if (timeline.equals("upload")) {
+            int index = getClientIndexByName(id.getName());
+            bImage = clients.get(index).getCurrentGraph();
+        }
         for (int i = 0; i < clients.size(); i++) {
             if (clients.get(i).user().equals(id)) {
                 continue;
             }
             try {
-                clients.get(i).drawtask(id, shape, timeline, color, o, message);
+                if (timeline.equals("upload") && bImage != null) {
+                    clients.get(i).drawImage(bImage);
+                } else {
+                    clients.get(i).drawtask(id, shape, timeline, color, o, message);
+                }
             } catch (RemoteException e) {
                 clients.remove(i);
                 i--;
@@ -77,11 +88,11 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
     }
 
     public void drawtask(Identity id, String shape, String status, Object color, Object o, String message) throws RemoteException {
-        if (shape != null) {
+        if (shape != null && !shape.isEmpty()) {
             this.pFrame.showEditing(id);
         }
 
-        if (shape == null) {
+        if (shape.isEmpty() || shape == null || shape.equals("chat")) {
             this.chattask(id, message);
             return;
         }
@@ -202,8 +213,20 @@ public class DrawServer extends UnicastRemoteObject implements DrawInterface, Ru
 
     @Override
     public void notify(String message, boolean isClosed) throws RemoteException {
-        // TODO Auto-generated method stub
+    }
 
+    @Override
+    public void drawImage(byte[] byteImage) throws RemoteException {
+        // TODO Auto-generated method stub
+        BufferedImage bImage2;
+        try {
+            bImage2 = ImageIO.read(new ByteArrayInputStream(byteImage));
+            pFrame.getG().drawImage(bImage2, 0, 0, null);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        pFrame.getCanvas().repaint();
     }
 
 }
